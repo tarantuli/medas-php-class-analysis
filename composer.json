@@ -1,6 +1,6 @@
 {
-    "name": "morphp/medas-placeholder",
-    "description": "Medas placeholder",
+    "name": "morphp/medas-php-class-analysis",
+    "description": "Medas PHP class analysis",
     "authors": [
         {
             "name": "Patrick Morpey",
@@ -18,8 +18,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Medas\\Placeholder\\": "src/",
-            "Medas\\PlaceholderTest\\": "tests/"
+            "Medas\\PhpClassAnalysis\\": "src/",
+            "Medas\\PhpClassAnalysisTest\\": "tests/"
         }
     }
 }

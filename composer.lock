@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e8f474fb3a1d2af68ea1f866ef95e397",
+    "content-hash": "6043ac7d36e15f8c4f197f95d59a8b07",
     "packages": [
         {
             "name": "morphp/medas-console",
@@ -135,6 +135,46 @@
                 "issues": "https://github.com/tarantuli/medas-object-instantiator/issues"
             },
             "time": "2023-05-02T08:13:36+00:00"
+        },
+        {
+            "name": "morphp/medas-php-tokenizer",
+            "version": "dev-dev",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:tarantuli/medas-php-tokenizer.git",
+                "reference": "529ce686a39ac5d73a30bcd65212dec6b2a54ce2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/tarantuli/medas-php-tokenizer/zipball/529ce686a39ac5d73a30bcd65212dec6b2a54ce2",
+                "reference": "529ce686a39ac5d73a30bcd65212dec6b2a54ce2",
+                "shasum": ""
+            },
+            "require-dev": {
+                "morphp/medas-console-printer": "dev-dev",
+                "morphp/medas-service-manager": "dev-dev",
+                "phpunit/phpunit": "^9.5"
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Medas\\PhpTokenizer\\": "src/",
+                    "Medas\\PhpTokenizerTest\\": "tests/"
+                }
+            },
+            "authors": [
+                {
+                    "name": "Patrick Morpey",
+                    "email": "patrick@morphp.nl"
+                }
+            ],
+            "description": "Medas PHP tokenizer",
+            "support": {
+                "source": "https://github.com/tarantuli/medas-php-tokenizer/tree/dev",
+                "issues": "https://github.com/tarantuli/medas-php-tokenizer/issues"
+            },
+            "time": "2023-05-11T11:18:01+00:00"
         },
         {
             "name": "morphp/medas-service-manager",
@@ -1921,7 +1961,8 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "morphp/medas-service-manager": 20
+        "morphp/medas-service-manager": 20,
+        "morphp/medas-php-tokenizer": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

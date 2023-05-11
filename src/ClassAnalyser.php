@@ -19,6 +19,11 @@ class ClassAnalyser
     {
     }
 
+    public function analyseClass(\ReflectionClass $class): ClassAnalysis
+    {
+        return $this->analyse(file_get_contents($class->getFileName()));
+    }
+
     public function analyse(string $code): ClassAnalysis
     {
         $tree = $this->treeBuilder->fromCode($code);

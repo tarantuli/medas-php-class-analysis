@@ -32,7 +32,7 @@ class ClassAnalysis
     public function resolveImport(string $label): ?string
     {
         foreach ($this->imports as $import) {
-        if ($import->label === $label) {
+            if ($import->label === $label) {
                 return $import->fqn;
             }
         }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Medas\PhpClassAnalysis;
 
 use Medas\Core\AsSingleton;
+use Medas\PhpTokenizer\PhpTokenizerPackage;
 use Medas\ServiceManager\BasePackage;
 
 class PhpClassAnalysisPackage extends BasePackage
@@ -14,6 +15,7 @@ class PhpClassAnalysisPackage extends BasePackage
     public function dependencies(): array
     {
         return $this->dependenciesByClass([
+            PhpTokenizerPackage::class,
         ]);
     }
 

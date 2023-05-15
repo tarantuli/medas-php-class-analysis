@@ -19,6 +19,11 @@ class ClassAnalyser
     {
     }
 
+    public function analyseClassByName(string $class): ClassAnalysis
+    {
+        return $this->analyseClass(new \ReflectionClass($class));
+    }
+
     public function analyseClass(\ReflectionClass $class): ClassAnalysis
     {
         return $this->analyse(file_get_contents($class->getFileName()));

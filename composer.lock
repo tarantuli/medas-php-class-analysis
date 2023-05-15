@@ -56,12 +56,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:tarantuli/medas-core.git",
-                "reference": "a862e81c0010aa9b5ba09cd7899b72c23cb980ed"
+                "reference": "80bb1813bcd69c94cbd864ea2433f2d3bd990da2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/a862e81c0010aa9b5ba09cd7899b72c23cb980ed",
-                "reference": "a862e81c0010aa9b5ba09cd7899b72c23cb980ed",
+                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/80bb1813bcd69c94cbd864ea2433f2d3bd990da2",
+                "reference": "80bb1813bcd69c94cbd864ea2433f2d3bd990da2",
                 "shasum": ""
             },
             "require": {
@@ -95,7 +95,7 @@
                 "source": "https://github.com/tarantuli/medas-core/tree/dev",
                 "issues": "https://github.com/tarantuli/medas-core/issues"
             },
-            "time": "2023-05-02T07:42:58+00:00"
+            "time": "2023-05-15T11:33:15+00:00"
         },
         {
             "name": "morphp/medas-object-instantiator",
@@ -142,12 +142,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:tarantuli/medas-php-tokenizer.git",
-                "reference": "529ce686a39ac5d73a30bcd65212dec6b2a54ce2"
+                "reference": "ac10971f387791a4ecce2f9f1121f426aa8fe1f6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-php-tokenizer/zipball/529ce686a39ac5d73a30bcd65212dec6b2a54ce2",
-                "reference": "529ce686a39ac5d73a30bcd65212dec6b2a54ce2",
+                "url": "https://api.github.com/repos/tarantuli/medas-php-tokenizer/zipball/ac10971f387791a4ecce2f9f1121f426aa8fe1f6",
+                "reference": "ac10971f387791a4ecce2f9f1121f426aa8fe1f6",
                 "shasum": ""
             },
             "require-dev": {
@@ -174,7 +174,7 @@
                 "source": "https://github.com/tarantuli/medas-php-tokenizer/tree/dev",
                 "issues": "https://github.com/tarantuli/medas-php-tokenizer/issues"
             },
-            "time": "2023-05-11T11:18:01+00:00"
+            "time": "2023-05-11T11:53:19+00:00"
         },
         {
             "name": "morphp/medas-service-manager",

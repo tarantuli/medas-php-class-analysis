@@ -9,6 +9,7 @@ use Medas\PhpTokenizer\{Contexts\MethodParameters,
     Contexts\MethodReturnType,
     StatementTypeFinder,
     StatementTypes\AttributeStatement,
+    StatementTypes\ClassDeclaration,
     StatementTypes\UseTraitStatement,
     Token,
     TokenTree
@@ -35,6 +36,9 @@ class ReferenceFinder
     public function find(TokenTree $tree, ClassAnalysis $results): void
     {
         foreach ($tree as $token) {
+            if ($token->is(T_DOC_COMMENT)) {
+                $this->processDoccomment($results, $token);
+            }
             if ($token->is(T_EXTENDS)) {
                 // Class extension declaration
                 $results->extends = $this->getReference($results, $token->next);
@@ -79,12 +83,11 @@ class ReferenceFinder
 
     private function getReference(ClassAnalysis $results, Token $token): ClassReference
     {
-        return $this->resolveReference($results, $token);
+        return $this->resolveReference($results, $token->text);
     }
 
-    private function resolveReference(ClassAnalysis $results, Token $token): ClassReference
+    private function resolveReference(ClassAnalysis $results, string $label): ClassReference
     {
-        $label = $token->text;
         $firstPart = $this->fqnProperties->getFirstPart($label);
 
         if ($firstPart === '') {
@@ -136,5 +139,15 @@ class ReferenceFinder
     {
         return $token->is(self::REFERENCE_TYPES)
             && !in_array($token->text, self::INTERNAL_TYPES, true);
+    }
+
+    private function processDoccomment(ClassAnalysis $results, Token $token): void
+    {
+        if ($this->statementTypeFinder->for($token->statement->next()) instanceof ClassDeclaration) {
+            // The class doccomment
+            if (preg_match('/@extends\s+[\w\\\]+<([\w\\\]+)>/', $token->text, $matches)) {
+                $results->extensionType = $this->resolveReference($results, $matches[1]);
+            }
+        }
     }
 }

@@ -143,7 +143,9 @@ class ReferenceFinder
 
     private function processDoccomment(ClassAnalysis $results, Token $token): void
     {
-        if ($this->statementTypeFinder->for($token->statement->next()) instanceof ClassDeclaration) {
+        $nextStatement = $token->statement->next();
+
+        if ($nextStatement && $this->statementTypeFinder->for($nextStatement) instanceof ClassDeclaration) {
             // The class doccomment
             if (preg_match('/@extends\s+[\w\\\]+<([\w\\\]+)>/', $token->text, $matches)) {
                 $results->extensionType = $this->resolveReference($results, $matches[1]);

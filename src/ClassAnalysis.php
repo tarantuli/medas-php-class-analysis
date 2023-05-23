@@ -30,7 +30,7 @@ class ClassAnalysis
     /** @var ClassReference[] */
     public array $imports = [];
 
-    public function resolveImport(string $label): ?string
+    public function resolveImport(string $label): string|null
     {
         foreach ($this->imports as $import) {
             if ($import->label === $label) {

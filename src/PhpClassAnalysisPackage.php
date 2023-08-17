@@ -14,9 +14,9 @@ class PhpClassAnalysisPackage extends BasePackage
 
     public function dependencies(): array
     {
-        return $this->dependenciesByClass([
-            PhpTokenizerPackage::class,
-        ]);
+        return [
+            PhpTokenizerPackage::instance(),
+        ];
     }
 
     public function sourceDirectory(): string

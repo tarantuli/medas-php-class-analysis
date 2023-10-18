@@ -18,12 +18,6 @@ use Medas\PhpTokenizer\{Contexts\MethodParameters,
 #[Service]
 class ReferenceFinder
 {
-    private const INTERNAL_TYPES = [
-        'bool', 'int', 'float', 'string', 'array', 'object', 'callable', 'iterable',
-        'resource', 'null', 'void', 'never', 'self', 'parent', 'static', 'mixed',
-        'false',
-    ];
-
     private const REFERENCE_TYPES = [T_STRING, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NAME_FULLY_QUALIFIED];
 
     public function __construct(
@@ -138,7 +132,7 @@ class ReferenceFinder
     private function couldBeClassName(Token $token): bool
     {
         return $token->is(self::REFERENCE_TYPES)
-            && !in_array($token->text, self::INTERNAL_TYPES, true);
+            && !in_array($token->text, InternalTypes::NAMES, true);
     }
 
     private function processDoccomment(ClassAnalysis $results, Token $token): void

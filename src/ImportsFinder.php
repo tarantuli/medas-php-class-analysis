@@ -30,6 +30,11 @@ class ImportsFinder
     {
         $path = $token->text;
 
+        if ($token->next->is(T_BACKSLASH)) {
+            $this->handleGroupedClasses($token, $results);
+            return;
+        }
+
         if ($token->next->is(T_AS)) {
             $reference = $token->next->next->text;
         }
@@ -39,5 +44,32 @@ class ImportsFinder
         }
 
         $results->imports[] = new ClassReference($reference, '\\' . $path);
+    }
+
+    private function handleGroupedClasses(Token $token, ClassAnalysis $results): void
+    {
+        $path = $token->text;
+        $reader = $token->next->next->next;
+
+        while (true) {
+            $subPath = $reader->text;
+
+            if ($reader->next->is(T_AS)) {
+                $reference = $reader->next->next->text;
+                $reader = $reader->next->next->next;
+            }
+            else {
+                $reference = $this->fqnProperties->getLastPart($subPath);
+                $reader = $reader->next;
+            }
+
+            $results->imports[] = new ClassReference($reference, '\\' . $path . '\\' . $subPath);
+
+            if ($reader->is(T_CURLY_BRACKET_CLOSE)) {
+                break;
+            }
+
+            $reader = $reader->next;
+        }
     }
 }

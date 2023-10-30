@@ -138,7 +138,7 @@ class ReferenceFinder
     private function couldBeClassName(Token $token): bool
     {
         return $token->is(self::REFERENCE_TYPES)
-            && !in_array($token->text, InternalTypes::NAMES, true);
+            && !in_array($token->text, PhpKeywords::ALL, true);
     }
 
     private function processDoccomment(ClassAnalysis $results, Token $token): void

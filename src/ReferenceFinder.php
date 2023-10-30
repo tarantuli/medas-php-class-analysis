@@ -33,6 +33,7 @@ class ReferenceFinder
             if ($token->is(T_DOC_COMMENT)) {
                 $this->processDoccomment($results, $token);
             }
+
             if ($token->is(T_EXTENDS)) {
                 // Class extension declaration
                 $results->extends = $this->getReference($results, $token->next);
@@ -69,6 +70,11 @@ class ReferenceFinder
                     || $token->context instanceof MethodReturnType
                     || $this->statementTypeFinder->for($token->statement) instanceof AttributeStatement) {
                     // Parameter type, return type or name within an attribute
+                    $this->addUsage($results, $token);
+                }
+
+                if ($token->next->is(T_VARIABLE)) {
+                    // ClassName $...
                     $this->addUsage($results, $token);
                 }
             }

@@ -8,7 +8,6 @@ use Medas\Core\Attributes\Service;
 use Medas\PhpTokenizer\{Contexts\MethodParameters,
     Contexts\MethodReturnType,
     StatementTypeFinder,
-    StatementTypes\AttributeStatement,
     StatementTypes\ClassDeclaration,
     StatementTypes\UseTraitStatement,
     Token,
@@ -68,7 +67,7 @@ class ReferenceFinder
 
                 if ($token->context instanceof MethodParameters
                     || $token->context instanceof MethodReturnType
-                    || $this->statementTypeFinder->for($token->statement) instanceof AttributeStatement) {
+                    || $token->inAttribute) {
                     // Parameter type, return type or name within an attribute
                     $this->addUsage($results, $token);
                 }

@@ -32,6 +32,7 @@ class ImportsFinder
 
         if ($token->next->is(T_BACKSLASH)) {
             $this->handleGroupedClasses($token, $results);
+
             return;
         }
 

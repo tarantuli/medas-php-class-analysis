@@ -11,8 +11,7 @@ use Medas\PhpTokenizer\{Contexts\MethodParameters,
     StatementTypes\ClassDeclaration,
     StatementTypes\UseTraitStatement,
     Token,
-    TokenTree
-};
+    TokenTree};
 
 #[Service]
 class ReferenceFinder
@@ -74,6 +73,10 @@ class ReferenceFinder
 
                 if ($token->next->is(T_VARIABLE)) {
                     // ClassName $...
+                    $this->addUsage($results, $token);
+                }
+                elseif ($token->previous && $token->previous->previous && $token->previous->previous->is(T_CATCH)) {
+                    // catch (ClassName) without variable
                     $this->addUsage($results, $token);
                 }
             }

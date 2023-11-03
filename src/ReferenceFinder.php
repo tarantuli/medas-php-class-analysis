@@ -151,5 +151,11 @@ class ReferenceFinder
                 $results->extensionType = $this->resolveReference($results, $matches[1]);
             }
         }
+
+        if (preg_match('/@(?:param|var|return)\s+(\S+)/', $token->text, $matches)) {
+            foreach (explode('|', $matches[1]) as $reference) {
+                $results->uses[$reference] = $this->resolveReference($results, $reference);
+            }
+        }
     }
 }

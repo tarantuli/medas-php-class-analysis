@@ -23,6 +23,7 @@ class PhpKeywords
         'self',
         'static',
         'string',
+        'true',
         'void',
     ];
 

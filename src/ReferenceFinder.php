@@ -140,25 +140,36 @@ class ReferenceFinder
     private function couldBeClassName(Token $token): bool
     {
         return $token->is(self::REFERENCE_TYPES)
-            && !in_array($token->text, PhpKeywords::ALL, true)
-            && !in_array($token->text, PhpKeywords::INTERNAL_TYPES, true);
+            && $this->textCouldBeClassName($token->text);
+    }
+
+    private function textCouldBeClassName(string $text): bool
+    {
+        return !in_array($text, PhpKeywords::ALL, true)
+            && !in_array($text, PhpKeywords::INTERNAL_TYPES, true);
     }
 
     private function processDoccomment(ClassAnalysis $results, Token $token): void
     {
-        $nextStatement = $token->statement->next();
-
-        if ($nextStatement && $this->statementTypeFinder->for($nextStatement) instanceof ClassDeclaration) {
+        if ($this->statementTypeFinder->for($token->statement) instanceof ClassDeclaration) {
             // The class doccomment
-            if (preg_match('/@extends\s+[\w\\\]+<([\w\\\]+)>/', $token->text, $matches)) {
-                $results->extensionType = $this->resolveReference($results, $matches[1]);
+            if (preg_match('/@extends\s+([\w\\\]+)<([\w\\\]+)>/', $token->text, $matches)) {
+                // Process the extension type
+                $results->extensionType = $this->resolveReference($results, $matches[2]);
+
+                if ($this->textCouldBeClassName($matches[2])) {
+                    $results->uses[$matches[2]] = $results->extensionType;
+                }
+
+                // Process the extended class itself
+                $results->uses[$matches[1]] = $this->resolveReference($results, $matches[1]);
             }
         }
 
         if (preg_match('/@(?:param|var|return)\s+(\S+)/', $token->text, $matches)) {
             foreach (explode('|', $matches[1]) as $reference) {
                 if (str_ends_with($reference, '[]')) {
-                    $reference = substr($reference, -2);
+                    $reference = substr($reference, 0, -2);
                 }
 
                 $results->uses[$reference] = $this->resolveReference($results, $reference);

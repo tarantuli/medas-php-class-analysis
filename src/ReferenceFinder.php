@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace Medas\PhpClassAnalysis;
 
 use Medas\Core\Attributes\Service;
-use Medas\PhpTokenizer\{Contexts\MethodParameters,
+
+use Medas\PhpTokenizer\{
+    Contexts\MethodParameters,
     Contexts\MethodReturnType,
     StatementTypeFinder,
     StatementTypes\ClassDeclaration,
     StatementTypes\UseTraitStatement,
     Token,
-    TokenTree};
+    TokenTree
+
+};
 
 #[Service]
 class ReferenceFinder
@@ -35,6 +39,7 @@ class ReferenceFinder
             if ($token->is(T_EXTENDS)) {
                 // Class extension declaration
                 $results->extends = $this->getReference($results, $token->next);
+
                 $this->addUsage($results, $token->next);
             }
 
@@ -64,9 +69,11 @@ class ReferenceFinder
                     $this->addUsage($results, $token);
                 }
 
-                if ($token->context instanceof MethodParameters
+                if (
+                    $token->context instanceof MethodParameters
                     || $token->context instanceof MethodReturnType
-                    || $token->inAttribute) {
+                    || $token->inAttribute
+                ) {
                     // Parameter type, return type or name within an attribute
                     $this->addUsage($results, $token);
                 }
@@ -78,6 +85,22 @@ class ReferenceFinder
                 elseif ($token->previous && $token->previous->previous && $token->previous->previous->is(T_CATCH)) {
                     // catch (ClassName) without variable
                     $this->addUsage($results, $token);
+                }
+
+                // "): <type>" in lambda functions
+                $previousToken = $token;
+
+                while ($previousToken = $previousToken->previous) {
+                    if ($previousToken->is(T_ROUND_BRACKET_CLOSE)) {
+                        $this->addUsage($results, $token);
+                        break;
+                    }
+
+                    if ($previousToken->is([T_STRING, T_COLON, T_PIPE, T_NAME_FULLY_QUALIFIED])) {
+                        continue;
+                    }
+
+                    break;
                 }
             }
         }
@@ -102,14 +125,12 @@ class ReferenceFinder
         if ($resolvedFirstPart === null) {
             // It's a path relative to the namespace
             $fqn = $results->namespace ? '\\' . $results->namespace . '\\' . $label : '\\' . $label;
+
             return new ClassReference($label, $fqn);
         }
         else {
             // It's a path relative to an alias
-            return new ClassReference(
-                $label,
-                $resolvedFirstPart . substr($label, strlen($firstPart))
-            );
+            return new ClassReference($label, $resolvedFirstPart . substr($label, strlen($firstPart)));
         }
     }
 
@@ -139,14 +160,12 @@ class ReferenceFinder
 
     private function couldBeClassName(Token $token): bool
     {
-        return $token->is(self::REFERENCE_TYPES)
-            && $this->textCouldBeClassName($token->text);
+        return $token->is(self::REFERENCE_TYPES) && $this->textCouldBeClassName($token->text);
     }
 
     private function textCouldBeClassName(string $text): bool
     {
-        return !in_array($text, PhpKeywords::ALL, true)
-            && !in_array($text, PhpKeywords::INTERNAL_TYPES, true);
+        return !in_array($text, PhpKeywords::ALL, true) && !in_array($text, PhpKeywords::INTERNAL_TYPES, true);
     }
 
     private function processDoccomment(ClassAnalysis $results, Token $token): void

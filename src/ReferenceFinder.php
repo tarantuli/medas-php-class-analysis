@@ -154,7 +154,7 @@ class ReferenceFinder
         do {
             $tokens[] = $token;
             $token = $token->next->next;
-        } while ($token->previous->is($separator));
+        } while ($token && $token->previous->is($separator));
 
         return $tokens;
     }
@@ -166,7 +166,7 @@ class ReferenceFinder
         do {
             $tokens[] = $token;
 
-            if (!$token->previous) {
+            if (!$token->previous || !$token->previous->previous) {
                 break;
             }
 

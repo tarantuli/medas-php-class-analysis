@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace Medas\PhpClassAnalysis;
 
 use Medas\Core\Attributes\Service;
-
-use Medas\PhpTokenizer\{
-    Contexts\MethodParameters,
+use Medas\PhpTokenizer\{Contexts\MethodParameters,
     Contexts\MethodReturnType,
     StatementTypeFinder,
     StatementTypes\ClassDeclaration,
     StatementTypes\UseTraitStatement,
     Token,
     TokenTree
-
 };
 
 #[Service]
@@ -45,7 +42,7 @@ class ReferenceFinder
 
             if ($token->is(T_IMPLEMENTS)) {
                 // Class implementation declaration, could be multiple
-                foreach ($this->gatherCommaSeparatedTokens($token->next) as $implementToken) {
+                foreach ($this->gatherSeparatedTokens($token->next, T_COMMA) as $implementToken) {
                     $this->addImplements($results, $implementToken);
                     $this->addUsage($results, $implementToken);
                 }
@@ -58,50 +55,58 @@ class ReferenceFinder
 
             if ($token->is(T_USE) && $this->statementTypeFinder->for($token->statement) instanceof UseTraitStatement) {
                 // A use trait statement, could be multiple
-                foreach ($this->gatherCommaSeparatedTokens($token->next) as $useToken) {
+                foreach ($this->gatherSeparatedTokens($token->next, T_COMMA) as $useToken) {
                     $this->addUsage($results, $useToken);
                 }
             }
 
-            if ($this->couldBeClassName($token)) {
-                if ($token->next->is(T_DOUBLE_COLON)) {
-                    // "ClassName::..."
-                    $this->addUsage($results, $token);
+            if ($token->next && $token->next->is(T_DOUBLE_COLON)) {
+                // "ClassName::..."
+                $this->addUsage($results, $token);
+            }
+
+            if (
+                $token->context instanceof MethodParameters
+                || $token->context instanceof MethodReturnType
+            ) {
+                // Parameter type or return type
+                foreach ($this->gatherSeparatedTokens($token, T_PIPE) as $declarationToken) {
+                    $this->addUsage($results, $declarationToken);
                 }
+            }
 
-                if (
-                    $token->context instanceof MethodParameters
-                    || $token->context instanceof MethodReturnType
-                    || $token->inAttribute
-                ) {
-                    // Parameter type, return type or name within an attribute
-                    $this->addUsage($results, $token);
+            if (
+                $token->inAttribute
+            ) {
+                // Name within an attribute
+                $this->addUsage($results, $token);
+            }
+
+            if ($token->next && $token->next->is(T_VARIABLE)) {
+                // ClassName $...
+                foreach ($this->gatherBackwardsSeparatedTokens($token, T_PIPE) as $typeToken) {
+                    $this->addUsage($results, $typeToken);
                 }
+            }
+            elseif ($token->previous && $token->previous->previous && $token->previous->previous->is(T_CATCH)) {
+                // catch (ClassName) without variable
+                $this->addUsage($results, $token);
+            }
 
-                if ($token->next->is(T_VARIABLE)) {
-                    // ClassName $...
+            // "): <type>" in lambda functions
+            $previousToken = $token;
+
+            while ($previousToken = $previousToken->previous) {
+                if ($previousToken->is(T_ROUND_BRACKET_CLOSE)) {
                     $this->addUsage($results, $token);
-                }
-                elseif ($token->previous && $token->previous->previous && $token->previous->previous->is(T_CATCH)) {
-                    // catch (ClassName) without variable
-                    $this->addUsage($results, $token);
-                }
-
-                // "): <type>" in lambda functions
-                $previousToken = $token;
-
-                while ($previousToken = $previousToken->previous) {
-                    if ($previousToken->is(T_ROUND_BRACKET_CLOSE)) {
-                        $this->addUsage($results, $token);
-                        break;
-                    }
-
-                    if ($previousToken->is([T_STRING, T_COLON, T_PIPE, T_NAME_FULLY_QUALIFIED])) {
-                        continue;
-                    }
-
                     break;
                 }
+
+                if ($previousToken->is([T_STRING, T_COLON, T_PIPE, T_NAME_FULLY_QUALIFIED])) {
+                    continue;
+                }
+
+                break;
             }
         }
     }
@@ -136,18 +141,37 @@ class ReferenceFinder
 
     private function addUsage(ClassAnalysis $results, Token $token): void
     {
-        $reference = $this->getReference($results, $token);
-        $results->uses[$reference->label] = $reference;
+        if ($this->couldBeClassName($token)) {
+            $reference = $this->getReference($results, $token);
+            $results->uses[$reference->label] = $reference;
+        }
     }
 
-    private function gatherCommaSeparatedTokens(Token $token): array
+    private function gatherSeparatedTokens(Token $token, int|string $separator): array
     {
         $tokens = [];
 
         do {
             $tokens[] = $token;
             $token = $token->next->next;
-        } while ($token->previous->is(T_COMMA));
+        } while ($token->previous->is($separator));
+
+        return $tokens;
+    }
+
+    private function gatherBackwardsSeparatedTokens(Token $token, int|string $separator): array
+    {
+        $tokens = [];
+
+        do {
+            $tokens[] = $token;
+
+            if (!$token->previous) {
+                break;
+            }
+
+            $token = $token->previous->previous;
+        } while ($token->next->is($separator));
 
         return $tokens;
     }

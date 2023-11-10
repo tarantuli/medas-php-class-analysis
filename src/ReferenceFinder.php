@@ -95,6 +95,7 @@ class ReferenceFinder
             while ($previousToken = $previousToken->previous) {
                 if ($previousToken->is(T_ROUND_BRACKET_CLOSE)) {
                     $this->addUsage($results, $token);
+
                     break;
                 }
 

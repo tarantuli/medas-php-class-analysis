@@ -9,18 +9,18 @@ class ClassAnalysis
     public string $namespace = '';
     public string|null $name = null;
     public string $fqn;
-
+    //---
     public ClassReference|null $extends = null;
     public ClassReference|null $extensionType = null;
 
     /** @var ClassReference[] */
     public array $implements = [];
-
+    //---
     public bool $isClass = false;
     public bool $isInterface = false;
     public bool $isTrait = false;
     public bool $isEnum = false;
-
+    //---
     public bool $isAbstract = false;
     public bool $isFinal = false;
 

@@ -26,7 +26,6 @@ class PhpKeywords
         'true',
         'void',
     ];
-
     public const ALL = [
         'abstract',
         'and',

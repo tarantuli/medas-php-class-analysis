@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Medas\PhpClassAnalysis;
 
 use Medas\Core\Attributes\Service;
-use Medas\PhpTokenizer\{Contexts\MethodParameters,
+use Medas\PhpTokenizer\{
+    Contexts\MethodParameters,
     Contexts\MethodReturnType,
     StatementTypeFinder,
     StatementTypes\ClassDeclaration,
@@ -65,19 +66,14 @@ class ReferenceFinder
                 $this->addUsage($results, $token);
             }
 
-            if (
-                $token->context instanceof MethodParameters
-                || $token->context instanceof MethodReturnType
-            ) {
+            if ($token->context instanceof MethodParameters || $token->context instanceof MethodReturnType) {
                 // Parameter type or return type
                 foreach ($this->gatherSeparatedTokens($token, T_PIPE) as $declarationToken) {
                     $this->addUsage($results, $declarationToken);
                 }
             }
 
-            if (
-                $token->inAttribute
-            ) {
+            if ($token->inAttribute) {
                 // Name within an attribute
                 $this->addUsage($results, $token);
             }

@@ -208,7 +208,7 @@ class ReferenceFinder
 
         if (preg_match('/@(?:param|var|return)\s+(\S+)/', $token->text, $matches)) {
             foreach (explode('|', $matches[1]) as $reference) {
-                if (str_ends_with($reference, '[]')) {
+                while (str_ends_with($reference, '[]')) {
                     $reference = substr($reference, 0, -2);
                 }
 

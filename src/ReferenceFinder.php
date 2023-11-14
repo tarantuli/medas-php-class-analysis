@@ -35,10 +35,11 @@ class ReferenceFinder
             }
 
             if ($token->is(T_EXTENDS)) {
-                // Class extension declaration
-                $results->extends = $this->getReference($results, $token->next);
-
-                $this->addUsage($results, $token->next);
+                // Class extension declaration, could be multiple (in interfaces)
+                foreach ($this->gatherSeparatedTokens($token->next, T_COMMA) as $extensionToken) {
+                    $this->addExtends($results, $extensionToken);
+                    $this->addUsage($results, $extensionToken);
+                }
             }
 
             if ($token->is(T_IMPLEMENTS)) {
@@ -171,6 +172,12 @@ class ReferenceFinder
         } while ($token->next->is($separator));
 
         return $tokens;
+    }
+
+    private function addExtends(ClassAnalysis $results, Token $token): void
+    {
+        $reference = $this->getReference($results, $token);
+        $results->extends[$reference->label] = $reference;
     }
 
     private function addImplements(ClassAnalysis $results, Token $token): void

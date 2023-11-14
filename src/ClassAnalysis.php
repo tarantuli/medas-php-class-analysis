@@ -10,7 +10,8 @@ class ClassAnalysis
     public string|null $name = null;
     public string $fqn;
     //---
-    public ClassReference|null $extends = null;
+    /** @var ClassReference[] */
+    public array $extends = [];
     public ClassReference|null $extensionType = null;
 
     /** @var ClassReference[] */

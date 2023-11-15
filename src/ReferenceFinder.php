@@ -219,7 +219,9 @@ class ReferenceFinder
                     $reference = substr($reference, 0, -2);
                 }
 
-                $results->uses[$reference] = $this->resolveReference($results, $reference);
+                if ($this->textCouldBeClassName($reference)) {
+                    $results->uses[$reference] = $this->resolveReference($results, $reference);
+                }
             }
         }
     }

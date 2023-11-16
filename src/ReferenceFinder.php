@@ -213,14 +213,16 @@ class ReferenceFinder
             }
         }
 
-        if (preg_match('/@(?:param|var|return|throws)\s+(\S+)/', $token->text, $matches)) {
-            foreach (explode('|', $matches[1]) as $reference) {
-                while (str_ends_with($reference, '[]')) {
-                    $reference = substr($reference, 0, -2);
-                }
+        if (preg_match_all('/@(?:param|var|return|throws)\s+(\S+)/', $token->text, $matches, PREG_SET_ORDER)) {
+            foreach ($matches as $match) {
+                foreach (explode('|', $match[1]) as $reference) {
+                    while (str_ends_with($reference, '[]')) {
+                        $reference = substr($reference, 0, -2);
+                    }
 
-                if ($this->textCouldBeClassName($reference)) {
-                    $results->uses[$reference] = $this->resolveReference($results, $reference);
+                    if ($this->textCouldBeClassName($reference)) {
+                        $results->uses[$reference] = $this->resolveReference($results, $reference);
+                    }
                 }
             }
         }

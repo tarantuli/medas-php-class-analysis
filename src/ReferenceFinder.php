@@ -69,7 +69,7 @@ class ReferenceFinder
 
             if ($token->context instanceof MethodParameters || $token->context instanceof MethodReturnType) {
                 // Parameter type or return type
-                foreach ($this->gatherSeparatedTokens($token, T_PIPE) as $declarationToken) {
+                foreach ($this->gatherSeparatedTokens($token, [T_PIPE, T_AMPERSAND]) as $declarationToken) {
                     $this->addUsage($results, $declarationToken);
                 }
             }
@@ -81,7 +81,7 @@ class ReferenceFinder
 
             if ($token->next && $token->next->is(T_VARIABLE)) {
                 // ClassName $...
-                foreach ($this->gatherBackwardsSeparatedTokens($token, T_PIPE) as $typeToken) {
+                foreach ($this->gatherBackwardsSeparatedTokens($token, [T_PIPE, T_AMPERSAND]) as $typeToken) {
                     $this->addUsage($results, $typeToken);
                 }
             }
@@ -100,7 +100,7 @@ class ReferenceFinder
                     break;
                 }
 
-                if ($previousToken->is([T_STRING, T_COLON, T_PIPE, T_NAME_FULLY_QUALIFIED])) {
+                if ($previousToken->is([T_STRING, T_COLON, T_PIPE, T_AMPERSAND, T_NAME_FULLY_QUALIFIED])) {
                     continue;
                 }
 
@@ -145,7 +145,7 @@ class ReferenceFinder
         }
     }
 
-    private function gatherSeparatedTokens(Token $token, int|string $separator): array
+    private function gatherSeparatedTokens(Token $token, int|string|array $separator): array
     {
         $tokens = [];
 
@@ -157,7 +157,7 @@ class ReferenceFinder
         return $tokens;
     }
 
-    private function gatherBackwardsSeparatedTokens(Token $token, int|string $separator): array
+    private function gatherBackwardsSeparatedTokens(Token $token, int|string|array $separator): array
     {
         $tokens = [];
 
@@ -215,7 +215,7 @@ class ReferenceFinder
 
         if (preg_match_all('/@(?:param|var|return|throws)\s+(\S+)/', $token->text, $matches, PREG_SET_ORDER)) {
             foreach ($matches as $match) {
-                foreach (explode('|', $match[1]) as $reference) {
+                foreach (preg_split('/[|&]/', $match[1]) as $reference) {
                     while (str_ends_with($reference, '[]')) {
                         $reference = substr($reference, 0, -2);
                     }

@@ -18,7 +18,12 @@ use Medas\PhpTokenizer\{
 #[Service]
 class ReferenceFinder
 {
-    private const REFERENCE_TYPES = [T_STRING, T_NAME_QUALIFIED, T_NAME_RELATIVE, T_NAME_FULLY_QUALIFIED];
+    private const REFERENCE_TYPES = [
+        T_STRING,
+        T_NAME_QUALIFIED,
+        T_NAME_RELATIVE,
+        T_NAME_FULLY_QUALIFIED
+    ];
 
     public function __construct(
         private readonly FqnProperties       $fqnProperties,
@@ -33,53 +38,48 @@ class ReferenceFinder
             if ($token->is(T_DOC_COMMENT)) {
                 $this->processDoccomment($results, $token);
             }
-
-            if ($token->is(T_EXTENDS)) {
+            elseif ($token->is(T_EXTENDS)) {
                 // Class extension declaration, could be multiple (in interfaces)
                 foreach ($this->gatherSeparatedTokens($token->next, T_COMMA) as $extensionToken) {
                     $this->addExtends($results, $extensionToken);
                     $this->addUsage($results, $extensionToken);
                 }
             }
-
-            if ($token->is(T_IMPLEMENTS)) {
+            elseif ($token->is(T_IMPLEMENTS)) {
                 // Class implementation declaration, could be multiple
                 foreach ($this->gatherSeparatedTokens($token->next, T_COMMA) as $implementToken) {
                     $this->addImplements($results, $implementToken);
                     $this->addUsage($results, $implementToken);
                 }
             }
-
-            if ($token->is([T_NEW, T_INSTANCEOF])) {
+            elseif ($token->is([T_NEW, T_INSTANCEOF])) {
                 // Object instantiaion or instanceof comparison
                 $this->addUsage($results, $token->next);
             }
-
-            if ($token->is(T_USE) && $this->statementTypeFinder->for($token->statement) instanceof UseTraitStatement) {
+            elseif (
+                $token->is(T_USE)
+                && $this->statementTypeFinder->for($token->statement) instanceof UseTraitStatement
+            ) {
                 // A use trait statement, could be multiple
                 foreach ($this->gatherSeparatedTokens($token->next, T_COMMA) as $useToken) {
                     $this->addUsage($results, $useToken);
                 }
             }
-
-            if ($token->next && $token->next->is(T_DOUBLE_COLON)) {
-                // "ClassName::..."
-                $this->addUsage($results, $token);
-            }
-
-            if ($token->context instanceof MethodParameters || $token->context instanceof MethodReturnType) {
+            elseif ($token->context instanceof MethodParameters || $token->context instanceof MethodReturnType) {
                 // Parameter type or return type
                 foreach ($this->gatherSeparatedTokens($token, [T_PIPE, T_AMPERSAND]) as $declarationToken) {
                     $this->addUsage($results, $declarationToken);
                 }
             }
-
-            if ($token->inAttribute) {
+            elseif ($token->inAttribute) {
                 // Name within an attribute
                 $this->addUsage($results, $token);
             }
-
-            if ($token->next && $token->next->is(T_VARIABLE)) {
+            elseif ($token->next && $token->next->is(T_DOUBLE_COLON)) {
+                // "ClassName::..."
+                $this->addUsage($results, $token);
+            }
+            elseif ($token->next && $token->next->is(T_VARIABLE)) {
                 // ClassName $...
                 foreach ($this->gatherBackwardsSeparatedTokens($token, [T_PIPE, T_AMPERSAND]) as $typeToken) {
                     $this->addUsage($results, $typeToken);
@@ -127,13 +127,18 @@ class ReferenceFinder
 
         if ($resolvedFirstPart === null) {
             // It's a path relative to the namespace
-            $fqn = $results->namespace ? '\\' . $results->namespace . '\\' . $label : '\\' . $label;
+            $fqn = $results->namespace
+                ? '\\' . $results->namespace . '\\' . $label
+                : '\\' . $label;
 
             return new ClassReference($label, $fqn);
         }
         else {
             // It's a path relative to an alias
-            return new ClassReference($label, $resolvedFirstPart . substr($label, strlen($firstPart)));
+            return new ClassReference(
+                $label,
+                $resolvedFirstPart . substr($label, strlen($firstPart))
+            );
         }
     }
 
@@ -193,7 +198,8 @@ class ReferenceFinder
 
     private function textCouldBeClassName(string $text): bool
     {
-        return !in_array($text, PhpKeywords::ALL, true) && !in_array($text, PhpKeywords::INTERNAL_TYPES, true);
+        return !in_array($text, PhpKeywords::ALL, true)
+            && !in_array($text, PhpKeywords::INTERNAL_TYPES, true);
     }
 
     private function processDoccomment(ClassAnalysis $results, Token $token): void

@@ -161,7 +161,7 @@ class ReferenceFinder
             $tokens[] = $token;
             $token = $token->next->next;
 
-            if ($token->next !== $token->next->next->previous) {
+            if ($token->next && $token->next->next && $token->next !== $token->next->next->previous) {
                 throw new Exceptions\TokenIsNotChainedWell($token->next);
             }
         } while ($token && $token->previous->is($separator));

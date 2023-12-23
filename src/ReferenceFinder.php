@@ -109,6 +109,102 @@ class ReferenceFinder
         }
     }
 
+    private function processDoccomment(ClassAnalysis $results, Token $token): void
+    {
+        if ($this->statementTypeFinder->for($token->statement) instanceof ClassDeclaration) {
+            // The class doccomment
+            if (preg_match('/@extends\s+([\w\\\]+)<([\w\\\]+)>/', $token->text, $matches)) {
+                // Process the extension type
+                $results->extensionType = $this->resolveReference($results, $matches[2]);
+
+                if ($this->textCouldBeClassName($matches[2])) {
+                    $results->uses[$matches[2]] = $results->extensionType;
+                }
+
+                // Process the extended class itself
+                $results->uses[$matches[1]] = $this->resolveReference($results, $matches[1]);
+            }
+        }
+
+        if (preg_match_all('/@(?:param|var|return|throws)\s+(\S+)/', $token->text, $matches, PREG_SET_ORDER)) {
+            foreach ($matches as $match) {
+                foreach (preg_split('/[|&]/', $match[1]) as $reference) {
+                    while (str_ends_with($reference, '[]')) {
+                        $reference = substr($reference, 0, -2);
+                    }
+
+                    if ($this->textCouldBeClassName($reference)) {
+                        $results->uses[$reference] = $this->resolveReference($results, $reference);
+                    }
+                }
+            }
+        }
+    }
+
+    private function addExtends(ClassAnalysis $results, Token $token): void
+    {
+        $reference = $this->getReference($results, $token);
+        $results->extends[$reference->label] = $reference;
+    }
+
+    private function addImplements(ClassAnalysis $results, Token $token): void
+    {
+        $reference = $this->getReference($results, $token);
+        $results->implements[$reference->label] = $reference;
+    }
+
+    private function gatherSeparatedTokens(Token $token, int|string|array $separator): array
+    {
+        $tokens = [];
+
+        do {
+            $tokens[] = $token;
+            $token = $token->next->next;
+
+            if ($token->next !== $token->next->next->previous) {
+                throw new Exceptions\TokenIsNotChainedWell($token->next);
+            }
+        } while ($token && $token->previous->is($separator));
+
+        return $tokens;
+    }
+
+    private function gatherBackwardsSeparatedTokens(Token $token, int|string|array $separator): array
+    {
+        $tokens = [];
+
+        do {
+            $tokens[] = $token;
+
+            if (!$token->previous || !$token->previous->previous) {
+                break;
+            }
+
+            $token = $token->previous->previous;
+        } while ($token->next->is($separator));
+
+        return $tokens;
+    }
+
+    private function addUsage(ClassAnalysis $results, Token $token): void
+    {
+        if ($this->couldBeClassName($token)) {
+            $reference = $this->getReference($results, $token);
+            $results->uses[$reference->label] = $reference;
+        }
+    }
+
+    private function couldBeClassName(Token $token): bool
+    {
+        return $token->is(self::REFERENCE_TYPES) && $this->textCouldBeClassName($token->text);
+    }
+
+    private function textCouldBeClassName(string $text): bool
+    {
+        return !in_array($text, PhpKeywords::ALL, true)
+            && !in_array($text, PhpKeywords::INTERNAL_TYPES, true);
+    }
+
     private function getReference(ClassAnalysis $results, Token $token): ClassReference
     {
         return $this->resolveReference($results, $token->text);
@@ -139,98 +235,6 @@ class ReferenceFinder
                 $label,
                 $resolvedFirstPart . substr($label, strlen($firstPart))
             );
-        }
-    }
-
-    private function addUsage(ClassAnalysis $results, Token $token): void
-    {
-        if ($this->couldBeClassName($token)) {
-            $reference = $this->getReference($results, $token);
-            $results->uses[$reference->label] = $reference;
-        }
-    }
-
-    private function gatherSeparatedTokens(Token $token, int|string|array $separator): array
-    {
-        $tokens = [];
-
-        do {
-            $tokens[] = $token;
-            $token = $token->next->next;
-        } while ($token && $token->previous->is($separator));
-
-        return $tokens;
-    }
-
-    private function gatherBackwardsSeparatedTokens(Token $token, int|string|array $separator): array
-    {
-        $tokens = [];
-
-        do {
-            $tokens[] = $token;
-
-            if (!$token->previous || !$token->previous->previous) {
-                break;
-            }
-
-            $token = $token->previous->previous;
-        } while ($token->next->is($separator));
-
-        return $tokens;
-    }
-
-    private function addExtends(ClassAnalysis $results, Token $token): void
-    {
-        $reference = $this->getReference($results, $token);
-        $results->extends[$reference->label] = $reference;
-    }
-
-    private function addImplements(ClassAnalysis $results, Token $token): void
-    {
-        $reference = $this->getReference($results, $token);
-        $results->implements[$reference->label] = $reference;
-    }
-
-    private function couldBeClassName(Token $token): bool
-    {
-        return $token->is(self::REFERENCE_TYPES) && $this->textCouldBeClassName($token->text);
-    }
-
-    private function textCouldBeClassName(string $text): bool
-    {
-        return !in_array($text, PhpKeywords::ALL, true)
-            && !in_array($text, PhpKeywords::INTERNAL_TYPES, true);
-    }
-
-    private function processDoccomment(ClassAnalysis $results, Token $token): void
-    {
-        if ($this->statementTypeFinder->for($token->statement) instanceof ClassDeclaration) {
-            // The class doccomment
-            if (preg_match('/@extends\s+([\w\\\]+)<([\w\\\]+)>/', $token->text, $matches)) {
-                // Process the extension type
-                $results->extensionType = $this->resolveReference($results, $matches[2]);
-
-                if ($this->textCouldBeClassName($matches[2])) {
-                    $results->uses[$matches[2]] = $results->extensionType;
-                }
-
-                // Process the extended class itself
-                $results->uses[$matches[1]] = $this->resolveReference($results, $matches[1]);
-            }
-        }
-
-        if (preg_match_all('/@(?:param|var|return|throws)\s+(\S+)/', $token->text, $matches, PREG_SET_ORDER)) {
-            foreach ($matches as $match) {
-                foreach (preg_split('/[|&]/', $match[1]) as $reference) {
-                    while (str_ends_with($reference, '[]')) {
-                        $reference = substr($reference, 0, -2);
-                    }
-
-                    if ($this->textCouldBeClassName($reference)) {
-                        $results->uses[$reference] = $this->resolveReference($results, $reference);
-                    }
-                }
-            }
         }
     }
 }

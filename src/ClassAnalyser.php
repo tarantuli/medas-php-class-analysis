@@ -8,13 +8,13 @@ use Medas\Core\Attributes\Service;
 use Medas\PhpTokenizer\{TokenTree, TreeBuilder};
 
 #[Service]
-class ClassAnalyser
+readonly class ClassAnalyser
 {
     public function __construct(
-        private readonly ImportsFinder   $importsFinder,
-        private readonly NameFinder      $nameFinder,
-        private readonly ReferenceFinder $referenceFinder,
-        private readonly TreeBuilder     $treeBuilder,
+        private ImportsFinder   $importsFinder,
+        private NameFinder      $nameFinder,
+        private ReferenceFinder $referenceFinder,
+        private TreeBuilder     $treeBuilder,
     )
     {
     }

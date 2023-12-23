@@ -8,11 +8,11 @@ use Medas\Core\Attributes\Service;
 use Medas\PhpTokenizer\{StatementTypeFinder, StatementTypes\UseClassStatement, Token, TokenTree};
 
 #[Service]
-class ImportsFinder
+readonly class ImportsFinder
 {
     public function __construct(
-        private readonly FqnProperties       $fqnProperties,
-        private readonly StatementTypeFinder $typeFinder,
+        private FqnProperties       $fqnProperties,
+        private StatementTypeFinder $typeFinder,
     )
     {
     }

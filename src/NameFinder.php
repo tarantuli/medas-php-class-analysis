@@ -12,10 +12,10 @@ use Medas\PhpTokenizer\{Token, TokenGroups, TokenTree};
  * and modifiers (abstract, final).
  */
 #[Service]
-class NameFinder
+readonly class NameFinder
 {
     public function __construct(
-        private readonly TokenGroups $tokenGroups,
+        private TokenGroups $tokenGroups,
     )
     {
     }

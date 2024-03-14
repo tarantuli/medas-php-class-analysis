@@ -1,6 +1,9 @@
 {
     "name": "morphp/medas-php-class-analysis",
     "description": "Medas PHP class analysis",
+    "keywords": [
+        "backend"
+    ],
     "authors": [
         {
             "name": "Patrick Morpey",

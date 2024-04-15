@@ -202,7 +202,8 @@ class ReferenceFinder
     private function textCouldBeClassName(string $text): bool
     {
         return !in_array($text, PhpKeywords::ALL, true)
-            && !in_array($text, PhpKeywords::INTERNAL_TYPES, true);
+            && !in_array($text, PhpKeywords::INTERNAL_TYPES, true)
+            && preg_match('/^[\w\\\\]+$/', $text);
     }
 
     private function getReference(ClassAnalysis $results, Token $token): ClassReference

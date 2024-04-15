@@ -9,5 +9,4 @@ use Medas\Core\Collections\LazyGenericCollection;
 /** @extends LazyGenericCollection<Book> */
 class Books extends LazyGenericCollection
 {
-
 }

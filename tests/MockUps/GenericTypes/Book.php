@@ -6,5 +6,4 @@ namespace Medas\PhpClassAnalysisTest\MockUps\GenericTypes;
 
 class Book
 {
-
 }

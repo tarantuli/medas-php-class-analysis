@@ -87,7 +87,9 @@ class ReferenceFinder
             }
             elseif ($token->previous && $token->previous->previous && $token->previous->previous->is(T_CATCH)) {
                 // catch (ClassName) without variable
-                $this->addUsage($results, $token);
+                foreach ($this->gatherSeparatedTokens($token, [T_PIPE, T_AMPERSAND]) as $declarationToken) {
+                    $this->addUsage($results, $declarationToken);
+                }
             }
 
             // "): <type>" in lambda functions

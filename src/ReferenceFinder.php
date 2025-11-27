@@ -155,22 +155,6 @@ class ReferenceFinder
         $results->implements[$reference->label] = $reference;
     }
 
-    private function gatherSeparatedTokens(Token $token, int|string|array $separator): array
-    {
-        $tokens = [];
-
-        do {
-            $tokens[] = $token;
-            $token = $token->next->next;
-
-            if ($token && $token->next && $token->next->next && $token->next !== $token->next->next->previous) {
-                throw new Exceptions\TokenIsNotChainedWell($token->next);
-            }
-        } while ($token && $token->previous->is($separator));
-
-        return $tokens;
-    }
-
     private function gatherBackwardsSeparatedTokens(Token $token, int|string|array $separator): array
     {
         $tokens = [];
@@ -183,7 +167,23 @@ class ReferenceFinder
             }
 
             $token = $token->previous->previous;
-        } while ($token->next->is($separator));
+        } while ($token->next && $token->next->is($separator));
+
+        return $tokens;
+    }
+
+    private function gatherSeparatedTokens(Token $token, int|string|array $separator): array
+    {
+        $tokens = [];
+
+        do {
+            $tokens[] = $token;
+            $token = $token->next->next;
+
+            if ($token && $token->next && $token->next->next && $token->next !== $token->next->next->previous) {
+                throw new Exceptions\TokenIsNotChainedWell($token->next);
+            }
+        } while ($token && $token->previous->is($separator));
 
         return $tokens;
     }

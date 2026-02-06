@@ -86,7 +86,7 @@ class ReferenceFinder
                 }
             }
             elseif ($token->previous && $token->previous->previous && $token->previous->previous->is(T_CATCH)) {
-                // catch (ClassName) without variable
+                // catch (ClassName) without a variable
                 foreach ($this->gatherSeparatedTokens($token, [T_PIPE, T_AMPERSAND]) as $declarationToken) {
                     $this->addUsage($results, $declarationToken);
                 }

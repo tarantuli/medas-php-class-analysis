@@ -18,7 +18,7 @@ use Medas\PhpTokenizer\{
 #[Service]
 class ReferenceFinder
 {
-    private const REFERENCE_TYPES = [
+    private const array REFERENCE_TYPES = [
         T_STRING,
         T_NAME_QUALIFIED,
         T_NAME_RELATIVE,

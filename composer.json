@@ -1,30 +1,29 @@
 {
-    "name": "morphp/medas-php-class-analysis",
-    "description": "Medas PHP class analysis",
-    "keywords": [
-        "backend"
-    ],
-    "authors": [
-        {
-            "name": "Patrick Morpey",
-            "email": "patrick@morphp.nl"
-        }
-    ],
-    "type": "library",
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "require": {
-        "morphp/medas-core": "dev-dev",
-        "morphp/medas-php-tokenizer": "dev-dev"
-    },
-    "require-dev": {
-        "morphp/medas-service-manager": "dev-dev",
-        "phpunit/phpunit": "^9.5"
-    },
-    "autoload": {
-        "psr-4": {
-            "Medas\\PhpClassAnalysis\\": "src/",
-            "Medas\\PhpClassAnalysisTest\\": "tests/"
-        }
+  "name": "morphp/medas-php-class-analysis",
+  "description": "Medas PHP class analysis",
+  "version": "2.0.0",
+  "keywords": [
+    "backend"
+  ],
+  "authors": [
+    {
+      "name": "Patrick Morpey",
+      "email": "patrick@morphp.nl"
     }
+  ],
+  "type": "library",
+  "require": {
+    "morphp/medas-core": "^2",
+    "morphp/medas-php-tokenizer": "^2"
+  },
+  "require-dev": {
+    "morphp/medas-service-manager": "^2",
+    "phpunit/phpunit": "^9.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "Medas\\PhpClassAnalysis\\": "src/",
+      "Medas\\PhpClassAnalysisTest\\": "tests/"
+    }
+  }
 }

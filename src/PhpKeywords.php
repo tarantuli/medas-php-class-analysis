@@ -6,7 +6,7 @@ namespace Medas\PhpClassAnalysis;
 
 class PhpKeywords
 {
-    public const INTERNAL_TYPES = [
+    public const array INTERNAL_TYPES = [
         'array',
         'bool',
         'callable',
@@ -27,7 +27,7 @@ class PhpKeywords
         'void',
     ];
 
-    public const ALL = [
+    public const array ALL = [
         'abstract',
         'and',
         'array',

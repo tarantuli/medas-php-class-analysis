@@ -8,7 +8,7 @@ class ClassAnalysis
 {
     public string $namespace = '';
     public string|null $name = null;
-    public string $fqn;
+    public string $fqn = '';
 
     //---
     /** @var ClassReference[] */

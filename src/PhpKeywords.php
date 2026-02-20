@@ -59,6 +59,7 @@ class PhpKeywords
         'extends',
         'final',
         'finally',
+        'enum',
         'fn',
         'for',
         'foreach',

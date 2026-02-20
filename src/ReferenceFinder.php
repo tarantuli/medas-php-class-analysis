@@ -178,7 +178,7 @@ class ReferenceFinder
 
         do {
             $tokens[] = $token;
-            $token = $token->next->next;
+            $token = $token->next?->next;
 
             if ($token && $token->next && $token->next->next && $token->next !== $token->next->next->previous) {
                 throw new Exceptions\TokenIsNotChainedWell($token->next);

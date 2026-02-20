@@ -39,7 +39,10 @@ readonly class NameFinder
     private function processName(Token $token, ClassAnalysis $results): void
     {
         $results->name = $token->next->text;
-        $results->fqn = '\\' . $results->namespace . '\\' . $results->name;
+
+        $results->fqn = $results->namespace
+            ? '\\' . $results->namespace . '\\' . $results->name
+            : '\\' . $results->name;
 
         match ($token->id) {
             T_CLASS => $results->isClass = true,

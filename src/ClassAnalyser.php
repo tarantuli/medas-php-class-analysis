@@ -11,11 +11,11 @@ use Medas\PhpTokenizer\{AdditionalTokensDefiner, TokenTree, TreeBuilder};
 readonly class ClassAnalyser
 {
     public function __construct(
-        AdditionalTokensDefiner $additionalTokensDefiner,
         private ImportsFinder   $importsFinder,
         private NameFinder      $nameFinder,
         private ReferenceFinder $referenceFinder,
         private TreeBuilder     $treeBuilder,
+        AdditionalTokensDefiner $additionalTokensDefiner,
     )
     {
         $additionalTokensDefiner->define();

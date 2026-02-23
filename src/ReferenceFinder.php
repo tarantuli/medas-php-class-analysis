@@ -135,8 +135,30 @@ class ReferenceFinder
                         $reference = substr($reference, 0, -2);
                     }
 
+                    // Check if the whole value is a class name
                     if ($this->textCouldBeClassName($reference)) {
                         $results->uses[$reference] = $this->resolveReference($results, $reference);
+                    }
+
+                    // Check for array type declarations "Something<TypeA, TypeB...>"
+                    if (preg_match('/(.+)<(.+)>/', $reference, $subMatch)) {
+                        if ($this->textCouldBeClassName($subMatch[1])) {
+                            $results->uses[$subMatch[1]] = $this->resolveReference(
+                                $results,
+                                $subMatch[1]
+                            );
+                        }
+
+                        foreach (explode(',', $subMatch[2]) as $subReference) {
+                            $subReference = trim($subReference);
+
+                            if ($this->textCouldBeClassName($subReference)) {
+                                $results->uses[$subReference] = $this->resolveReference(
+                                    $results,
+                                    $subReference
+                                );
+                            }
+                        }
                     }
                 }
             }

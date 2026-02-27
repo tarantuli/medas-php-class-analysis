@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Medas\PhpClassAnalysis;
 
-use Medas\Core\AsSingleton;
+use Medas\Core\{AsSingleton, BasePackage};
 use Medas\PhpTokenizer\PhpTokenizerPackage;
-use Medas\ServiceManager\BasePackage;
 
 class PhpClassAnalysisPackage extends BasePackage
 {

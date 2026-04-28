@@ -9,25 +9,19 @@ use Medas\PhpTokenizer\{
     Contexts\MethodParameters,
     Contexts\MethodReturnType,
     StatementTypeFinder,
-    StatementTypes\ClassDeclaration,
     StatementTypes\UseTraitStatement,
     Token,
     TokenTree
 };
 
 #[Service]
-class ReferenceFinder
+readonly class ReferenceFinder
 {
-    private const array REFERENCE_TYPES = [
-        T_STRING,
-        T_NAME_QUALIFIED,
-        T_NAME_RELATIVE,
-        T_NAME_FULLY_QUALIFIED
-    ];
-
     public function __construct(
-        private readonly FqnProperties       $fqnProperties,
-        private readonly StatementTypeFinder $statementTypeFinder,
+        private ReferenceFinder\DoccommentParser  $doccommentParser,
+        private ReferenceFinder\ReferenceResolver $referenceResolver,
+        private ReferenceFinder\TextAnalyzer      $textAnalyzer,
+        private StatementTypeFinder               $statementTypeFinder,
     )
     {
     }
@@ -36,7 +30,7 @@ class ReferenceFinder
     {
         foreach ($tree as $token) {
             if ($token->is(T_DOC_COMMENT)) {
-                $this->processDoccomment($results, $token);
+                $this->doccommentParser->processDoccomment($results, $token);
             }
             elseif ($token->is(T_EXTENDS)) {
                 // Class extension declaration, could be multiple (in interfaces)
@@ -111,69 +105,15 @@ class ReferenceFinder
         }
     }
 
-    private function processDoccomment(ClassAnalysis $results, Token $token): void
-    {
-        if ($this->statementTypeFinder->for($token->statement) instanceof ClassDeclaration) {
-            // The class doccomment
-            if (preg_match('/@extends\s+([\w\\\]+)<([\w\\\]+)>/', $token->text, $matches)) {
-                // Process the extension type
-                $results->extensionType = $this->resolveReference($results, $matches[2]);
-
-                if ($this->textCouldBeClassName($matches[2])) {
-                    $results->uses[$matches[2]] = $results->extensionType;
-                }
-
-                // Process the extended class itself
-                $results->uses[$matches[1]] = $this->resolveReference($results, $matches[1]);
-            }
-        }
-
-        if (preg_match_all('/@(?:param|var|return|throws)\s+(\S+)/', $token->text, $matches, PREG_SET_ORDER)) {
-            foreach ($matches as $match) {
-                foreach (preg_split('/[|&]/', $match[1]) as $reference) {
-                    while (str_ends_with($reference, '[]')) {
-                        $reference = substr($reference, 0, -2);
-                    }
-
-                    // Check if the whole value is a class name
-                    if ($this->textCouldBeClassName($reference)) {
-                        $results->uses[$reference] = $this->resolveReference($results, $reference);
-                    }
-
-                    // Check for array type declarations "Something<TypeA, TypeB...>"
-                    if (preg_match('/(.+)<(.+)>/', $reference, $subMatch)) {
-                        if ($this->textCouldBeClassName($subMatch[1])) {
-                            $results->uses[$subMatch[1]] = $this->resolveReference(
-                                $results,
-                                $subMatch[1]
-                            );
-                        }
-
-                        foreach (explode(',', $subMatch[2]) as $subReference) {
-                            $subReference = trim($subReference);
-
-                            if ($this->textCouldBeClassName($subReference)) {
-                                $results->uses[$subReference] = $this->resolveReference(
-                                    $results,
-                                    $subReference
-                                );
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     private function addExtends(ClassAnalysis $results, Token $token): void
     {
-        $reference = $this->getReference($results, $token);
+        $reference = $this->referenceResolver->resolve($results, $token->text);
         $results->extends[$reference->label] = $reference;
     }
 
     private function addImplements(ClassAnalysis $results, Token $token): void
     {
-        $reference = $this->getReference($results, $token);
+        $reference = $this->referenceResolver->resolve($results, $token->text);
         $results->implements[$reference->label] = $reference;
     }
 
@@ -212,54 +152,9 @@ class ReferenceFinder
 
     private function addUsage(ClassAnalysis $results, Token $token): void
     {
-        if ($this->couldBeClassName($token)) {
-            $reference = $this->getReference($results, $token);
+        if ($this->textAnalyzer->tokenCouldBeClassName($token)) {
+            $reference = $this->referenceResolver->resolve($results, $token->text);
             $results->uses[$reference->label] = $reference;
-        }
-    }
-
-    private function couldBeClassName(Token $token): bool
-    {
-        return $token->is(self::REFERENCE_TYPES) && $this->textCouldBeClassName($token->text);
-    }
-
-    private function textCouldBeClassName(string $text): bool
-    {
-        return !in_array($text, PhpKeywords::ALL, true)
-            && !in_array($text, PhpKeywords::INTERNAL_TYPES, true)
-            && preg_match('/^[\w\\\\]+$/', $text);
-    }
-
-    private function getReference(ClassAnalysis $results, Token $token): ClassReference
-    {
-        return $this->resolveReference($results, $token->text);
-    }
-
-    private function resolveReference(ClassAnalysis $results, string $label): ClassReference
-    {
-        $firstPart = $this->fqnProperties->getFirstPart($label);
-
-        if ($firstPart === '') {
-            // It's an absolute path
-            return new ClassReference($label, $label);
-        }
-
-        $resolvedFirstPart = $results->resolveImport($firstPart);
-
-        if ($resolvedFirstPart === null) {
-            // It's a path relative to the namespace
-            $fqn = $results->namespace
-                ? '\\' . $results->namespace . '\\' . $label
-                : '\\' . $label;
-
-            return new ClassReference($label, $fqn);
-        }
-        else {
-            // It's a path relative to an alias
-            return new ClassReference(
-                $label,
-                $resolvedFirstPart . substr($label, strlen($firstPart))
-            );
         }
     }
 }

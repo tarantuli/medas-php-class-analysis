@@ -47,7 +47,7 @@ readonly class DoccommentParser
         )) {
             foreach ($matches as $match) {
                 foreach ($this->extractDocTypeNames($match[1]) as $reference) {
-                    if ($this->textAnalyzer->tokenCouldBeClassName($reference)) {
+                    if ($this->textAnalyzer->couldBeClassName($reference)) {
                         $results->uses[$reference] = $this->referenceResolver->resolve(
                             $results,
                             $reference
@@ -58,6 +58,7 @@ readonly class DoccommentParser
         }
     }
 
+    /** @return string[] */
     private function extractDocTypeNames(string $type): array
     {
         $names = [];

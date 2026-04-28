@@ -46,7 +46,7 @@ readonly class DoccommentParser
             PREG_SET_ORDER
         )) {
             foreach ($matches as $match) {
-                foreach ($this->extractDocTypeNames($match[1]) as $reference) {
+                foreach ($this->textAnalyzer->extractDocTypeNames($match[1]) as $reference) {
                     if ($this->textAnalyzer->couldBeClassName($reference)) {
                         $results->uses[$reference] = $this->referenceResolver->resolve(
                             $results,
@@ -56,51 +56,5 @@ readonly class DoccommentParser
                 }
             }
         }
-    }
-
-    /** @return string[] */
-    private function extractDocTypeNames(string $type): array
-    {
-        $names = [];
-
-        // Extract type names from array shape syntax: array{T1, T2, key: T3, key?: T4}
-        $type = preg_replace_callback('/\{([^}]+)}/', function (array $m) use (&$names): string {
-            foreach (explode(',', $m[1]) as $entry) {
-                // Strip optional named key prefix, e.g. "key: Type" or "key?: Type"
-                $entry = preg_replace('/^\s*[\w-]+\??\s*:\s*/', '', trim($entry));
-
-                array_push($names, ...$this->extractDocTypeNames($entry));
-            }
-
-            return '';
-        }, $type);
-
-        // Extract type names from generic syntax: Collection<TypeA, TypeB>
-        $type = preg_replace_callback('/<([^>]+)>/', function (array $m) use (&$names): string {
-            foreach (explode(',', $m[1]) as $entry) {
-                array_push($names, ...$this->extractDocTypeNames(trim($entry)));
-            }
-
-            return '';
-        }, $type);
-
-        foreach (preg_split('/[|&]/', $type) as $part) {
-            $part = trim($part);
-
-            // Strip nullable prefix
-            if (str_starts_with($part, '?')) {
-                $part = substr($part, 1);
-            }
-
-            while (str_ends_with($part, '[]')) {
-                $part = substr($part, 0, -2);
-            }
-
-            if ($part !== '') {
-                $names[] = $part;
-            }
-        }
-
-        return $names;
     }
 }

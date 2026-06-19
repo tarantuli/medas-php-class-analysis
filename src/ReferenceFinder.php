@@ -69,8 +69,12 @@ readonly class ReferenceFinder
                 // Name within an attribute
                 $this->addUsage($results, $token);
             }
-            elseif ($token->next && $token->next->is(T_DOUBLE_COLON)) {
-                // "ClassName::..."
+            elseif (
+                $token->next
+                && $token->next->is(T_DOUBLE_COLON)
+                && (!$token->previous || !$token->previous->is(T_OBJECT_OPERATOR))
+            ) {
+                // "ClassName::...", but not "$this->propertyName::...)"
                 $this->addUsage($results, $token);
             }
             elseif ($token->next && $token->next->is(T_VARIABLE)) {

@@ -40,7 +40,10 @@ readonly class DoccommentParser
         }
 
         if (preg_match_all(
-            '/@(?:param|var|return|throws)\s+((?:[^{}\s]+|\{[^}]*})+)/',
+            // Capture the whole type expression. Runs of non-whitespace are taken as-is, but
+            // whitespace inside array shapes {..} and generics <..> (e.g. "array<string, Invoice>")
+            // must not terminate the type, so those groups are matched with balanced recursion.
+            '/@(?:param|var|return|throws)\s+((?:[^\s{}<>]++|(?<brace>\{(?:[^{}]++|(?&brace))*+})|(?<angle><(?:[^<>]++|(?&angle))*+>))++)/',
             $token->text,
             $matches,
             PREG_SET_ORDER

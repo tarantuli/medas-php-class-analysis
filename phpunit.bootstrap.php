@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Medas\ObjectInstantiator\ObjectInstantiator;
+use Medas\ObjectInstantiator\{ObjectInstantiator, ObjectInstantiatorPackage};
 use Medas\PhpClassAnalysis\PhpClassAnalysisPackage;
 use Medas\ServiceManager\{ServiceConfigBuilder, ServiceManager};
 
@@ -13,6 +13,7 @@ new ServiceManager(function (): ServiceConfigBuilder {
 
     $config->addPackages([
         PhpClassAnalysisPackage::instance(),
+        ObjectInstantiatorPackage::instance(),
     ]);
 
     return $config;

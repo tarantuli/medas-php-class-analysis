@@ -61,7 +61,7 @@ readonly class ReferenceFinder
             }
             elseif ($token->context instanceof MethodParameters || $token->context instanceof MethodReturnType) {
                 // Parameter type or return type
-                foreach ($this->gatherSeparatedTokens($token, [T_PIPE, T_AMPERSAND]) as $declarationToken) {
+                foreach ($this->gatherSeparatedTokens($token, [T_VERTICAL_BAR, T_AMPERSAND]) as $declarationToken) {
                     $this->addUsage($results, $declarationToken);
                 }
             }
@@ -79,13 +79,13 @@ readonly class ReferenceFinder
             }
             elseif ($token->next && $token->next->is(T_VARIABLE)) {
                 // ClassName $...
-                foreach ($this->gatherBackwardsSeparatedTokens($token, [T_PIPE, T_AMPERSAND]) as $typeToken) {
+                foreach ($this->gatherBackwardsSeparatedTokens($token, [T_VERTICAL_BAR, T_AMPERSAND]) as $typeToken) {
                     $this->addUsage($results, $typeToken);
                 }
             }
             elseif ($token->previous && $token->previous->previous && $token->previous->previous->is(T_CATCH)) {
                 // catch (ClassName) without a variable
-                foreach ($this->gatherSeparatedTokens($token, [T_PIPE, T_AMPERSAND]) as $declarationToken) {
+                foreach ($this->gatherSeparatedTokens($token, [T_VERTICAL_BAR, T_AMPERSAND]) as $declarationToken) {
                     $this->addUsage($results, $declarationToken);
                 }
             }
@@ -100,7 +100,7 @@ readonly class ReferenceFinder
                     break;
                 }
 
-                if ($previousToken->is([T_STRING, T_COLON, T_PIPE, T_AMPERSAND, T_NAME_FULLY_QUALIFIED])) {
+                if ($previousToken->is([T_STRING, T_COLON, T_VERTICAL_BAR, T_AMPERSAND, T_NAME_FULLY_QUALIFIED])) {
                     continue;
                 }
 

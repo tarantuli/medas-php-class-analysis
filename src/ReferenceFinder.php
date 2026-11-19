@@ -156,9 +156,24 @@ readonly class ReferenceFinder
 
     private function addUsage(ClassAnalysis $results, Token $token): void
     {
+        if ($this->isNamedArgument($token)) {
+            return;
+        }
+
         if ($this->textAnalyzer->tokenCouldBeClassName($token)) {
             $reference = $this->referenceResolver->resolve($results, $token->text);
             $results->uses[$reference->label] = $reference;
         }
+    }
+
+    /**
+     * "name:" directly after "(" or "," is a named argument, e.g. new Operation(requestBody: ...).
+     * A ternary "? Foo :", "case FOO:" and goto labels are not preceded by "(" or ",".
+     */
+    private function isNamedArgument(Token $token): bool
+    {
+        return $token->is(T_STRING)
+            && $token->next?->is(T_COLON)
+            && $token->previous?->is([T_ROUND_BRACKET_OPEN, T_COMMA]);
     }
 }

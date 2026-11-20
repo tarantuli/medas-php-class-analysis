@@ -17,6 +17,15 @@ use Medas\PhpTokenizer\{
 #[Service]
 readonly class ReferenceFinder
 {
+    private const array TYPE_EXPRESSION_TOKENS = [
+        T_STRING,
+        T_NAME_QUALIFIED,
+        T_NAME_FULLY_QUALIFIED,
+        T_VERTICAL_BAR,
+        T_AMPERSAND,
+        T_QUESTION_MARK,
+    ];
+
     public function __construct(
         private ReferenceFinder\DoccommentParser  $doccommentParser,
         private ReferenceFinder\ReferenceResolver $referenceResolver,
@@ -28,7 +37,12 @@ readonly class ReferenceFinder
 
     public function find(TokenTree $tree, ClassAnalysis $results): void
     {
+        // The number of brackets opened inside the current attribute; names at depth 0 are attribute names
+        $attributeDepth = 0;
+
         foreach ($tree as $token) {
+            $attributeDepth = $this->updateAttributeDepth($token, $attributeDepth);
+
             if ($token->is(T_DOC_COMMENT)) {
                 $this->doccommentParser->processDoccomment($results, $token);
             }
@@ -59,15 +73,20 @@ readonly class ReferenceFinder
                     $this->addUsage($results, $useToken);
                 }
             }
-            elseif ($token->context instanceof MethodParameters || $token->context instanceof MethodReturnType) {
-                // Parameter type or return type
+            elseif (
+                ($token->context instanceof MethodParameters && $token->inTypeDeclaration)
+                || $token->context instanceof MethodReturnType
+            ) {
+                // Parameter type or return type. Default values aren't types: a constant there is no class reference.
                 foreach ($this->gatherSeparatedTokens($token, [T_VERTICAL_BAR, T_AMPERSAND]) as $declarationToken) {
                     $this->addUsage($results, $declarationToken);
                 }
             }
             elseif ($token->inAttribute) {
-                // Name within an attribute
-                $this->addUsage($results, $token);
+                // The name of an attribute, or a class in "Class::..." in its arguments, but not a constant argument
+                if ($attributeDepth === 0 || $token->next?->is(T_DOUBLE_COLON)) {
+                    $this->addUsage($results, $token);
+                }
             }
             elseif (
                 $token->next
@@ -90,23 +109,57 @@ readonly class ReferenceFinder
                 }
             }
 
-            // "): <type>" in lambda functions
-            $previousToken = $token;
-
-            while ($previousToken = $previousToken->previous) {
-                if ($previousToken->is(T_ROUND_BRACKET_CLOSE)) {
-                    $this->addUsage($results, $token);
-
-                    break;
-                }
-
-                if ($previousToken->is([T_STRING, T_COLON, T_VERTICAL_BAR, T_AMPERSAND, T_NAME_FULLY_QUALIFIED])) {
-                    continue;
-                }
-
-                break;
+            if ($this->isClosureReturnType($token)) {
+                // "): <type> {" and "): <type> =>" in lambda functions
+                $this->addUsage($results, $token);
             }
         }
+    }
+
+    /**
+     * The return type of a closure or arrow function is preceded by "):" and followed by "{" or "=>". Requiring both
+     * keeps out a constant or function call in the "else" part of a ternary, like `$a ? b() : C;`.
+     */
+    private function isClosureReturnType(Token $token): bool
+    {
+        $previous = $token->previous;
+
+        while ($previous?->is(self::TYPE_EXPRESSION_TOKENS)) {
+            $previous = $previous->previous;
+        }
+
+        if (!$previous?->is(T_COLON) || !$previous->previous?->is(T_ROUND_BRACKET_CLOSE)) {
+            return false;
+        }
+
+        $next = $token->next;
+
+        while ($next?->is(self::TYPE_EXPRESSION_TOKENS)) {
+            $next = $next->next;
+        }
+
+        return $next?->is([T_CURLY_BRACKET_OPEN, T_DOUBLE_ARROW]) ?? false;
+    }
+
+    private function updateAttributeDepth(Token $token, int $depth): int
+    {
+        if ($token->is(T_ATTRIBUTE)) {
+            return 0;
+        }
+
+        if (!$token->inAttribute || $token->closesAttribute) {
+            return $depth;
+        }
+
+        if ($token->is([T_ROUND_BRACKET_OPEN, T_SQUARE_BRACKET_OPEN])) {
+            return $depth + 1;
+        }
+
+        if ($token->is([T_ROUND_BRACKET_CLOSE, T_SQUARE_BRACKET_CLOSE])) {
+            return $depth - 1;
+        }
+
+        return $depth;
     }
 
     private function addExtends(ClassAnalysis $results, Token $token): void

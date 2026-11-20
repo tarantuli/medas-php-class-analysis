@@ -5,11 +5,19 @@ declare(strict_types=1);
 namespace Medas\PhpClassAnalysis;
 
 use Medas\Core\Attributes\Service;
-use Medas\PhpTokenizer\{StatementTypeFinder, StatementTypes\UseClassStatement, Token, TokenTree};
+use Medas\PhpTokenizer\{Statement, StatementTypeFinder, StatementTypes\UseClassStatement, Token, TokenTree};
 
+/**
+ * Finds the class imports (`use` statements) of a file, including several imports in one statement
+ * (`use A, B;`) and group imports (`use A\{B, C as D};`), with or without a trailing comma.
+ *
+ * @notFor Function and constant imports (`use function`, `use const`), and trait uses inside a class.
+ */
 #[Service]
 readonly class ImportsFinder
 {
+    private const array NAME_TOKENS = [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED];
+
     public function __construct(
         private FqnProperties       $fqnProperties,
         private StatementTypeFinder $typeFinder,
@@ -19,58 +27,83 @@ readonly class ImportsFinder
 
     public function find(TokenTree $tree, ClassAnalysis $results): void
     {
-        foreach ($tree as $token) {
-            if ($token->is(T_USE) && $this->typeFinder->for($token->statement) instanceof UseClassStatement) {
-                $this->processImport($token->next, $results);
+        foreach ($tree->statements() as $statement) {
+            if ($this->typeFinder->for($statement) instanceof UseClassStatement) {
+                $this->processStatement($statement, $results);
             }
         }
     }
 
-    private function processImport(Token $token, ClassAnalysis $results): void
+    private function processStatement(Statement $statement, ClassAnalysis $results): void
     {
-        $path = $token->text;
+        $tokens = array_values(array_filter(
+            iterator_to_array($statement, false),
+            fn(Token $token) => !$token->is([T_COMMENT, T_DOC_COMMENT])
+        ));
 
-        if ($token->next->is(T_BACKSLASH)) {
-            $this->handleGroupedClasses($token, $results);
+        // Skip the "use" keyword
+        $index = 1;
 
-            return;
-        }
+        while (isset($tokens[$index]) && $tokens[$index]->is(self::NAME_TOKENS)) {
+            $path = ltrim($tokens[$index]->text, '\\');
 
-        if ($token->next->is(T_AS)) {
-            $reference = $token->next->next->text;
-        }
-        else {
-            // The path does not start with a \, so it isn't a FQN, but that's no problem for getLastPart()
-            $reference = $this->fqnProperties->getLastPart($path);
-        }
+            ++$index;
 
-        $results->imports[] = new ClassReference($reference, '\\' . $path);
-    }
+            $isGroup = ($tokens[$index] ?? null)?->is(T_BACKSLASH)
+                && ($tokens[$index + 1] ?? null)?->is(T_CURLY_BRACKET_OPEN);
 
-    private function handleGroupedClasses(Token $token, ClassAnalysis $results): void
-    {
-        $path = $token->text;
-        $reader = $token->next->next->next;
-
-        while (true) {
-            $subPath = $reader->text;
-
-            if ($reader->next->is(T_AS)) {
-                $reference = $reader->next->next->text;
-                $reader = $reader->next->next->next;
+            if ($isGroup) {
+                $index = $this->processGroup($tokens, $index + 2, $path, $results);
             }
             else {
-                $reference = $this->fqnProperties->getLastPart($subPath);
-                $reader = $reader->next;
+                $index = $this->processName($tokens, $index, $path, $results);
             }
 
-            $results->imports[] = new ClassReference($reference, '\\' . $path . '\\' . $subPath);
-
-            if ($reader->is(T_CURLY_BRACKET_CLOSE)) {
-                break;
+            // Skip the comma between imports
+            if (($tokens[$index] ?? null)?->is(T_COMMA)) {
+                ++$index;
             }
-
-            $reader = $reader->next;
         }
+    }
+
+    /**
+     * @param Token[] $tokens
+     * @return int The index of the first token after the group
+     */
+    private function processGroup(array $tokens, int $index, string $prefix, ClassAnalysis $results): int
+    {
+        while (isset($tokens[$index]) && !$tokens[$index]->is(T_CURLY_BRACKET_CLOSE)) {
+            if ($tokens[$index]->is(self::NAME_TOKENS)) {
+                $path = $prefix . '\\' . $tokens[$index]->text;
+                $index = $this->processName($tokens, $index + 1, $path, $results);
+            }
+            else {
+                // A comma, including a trailing one
+                ++$index;
+            }
+        }
+
+        // Skip the closing curly bracket
+        return $index + 1;
+    }
+
+    /**
+     * @param Token[] $tokens
+     * @param string $path The imported path, without a leading backslash
+     * @return int The index of the first token after the name and its alias
+     */
+    private function processName(array $tokens, int $index, string $path, ClassAnalysis $results): int
+    {
+        if (($tokens[$index] ?? null)?->is(T_AS) && isset($tokens[$index + 1])) {
+            $label = $tokens[$index + 1]->text;
+            $index += 2;
+        }
+        else {
+            $label = $this->fqnProperties->getLastPart($path);
+        }
+
+        $results->imports[] = new ClassReference($label, '\\' . $path);
+
+        return $index;
     }
 }

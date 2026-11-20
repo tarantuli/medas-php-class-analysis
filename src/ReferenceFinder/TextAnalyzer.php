@@ -18,6 +18,42 @@ readonly class TextAnalyzer
         T_NAME_FULLY_QUALIFIED,
     ];
 
+    /**
+     * Doc comment tags that are followed by a type expression. `@method` may have `static` before its return type.
+     * Runs of non-whitespace are taken as-is, but whitespace inside array shapes {..} and generics <..>
+     * (e.g. "array<string, Invoice>") doesn't end the type, so those groups are matched with balanced recursion.
+     */
+    private const string TYPE_TAG_PATTERN = '/@(?:phpstan-|psalm-)?'
+        . '(?:param|var|return|throws|property|property-read|property-write|method|mixin|implements|extends|use)'
+        . '\s+(?:static\s+)?'
+        . '((?:[^\s{}<>]++|(?<brace>\{(?:[^{}]++|(?&brace))*+})|(?<angle><(?:[^<>]++|(?&angle))*+>))++)/';
+
+    /**
+     * `@see` is followed by a class name, possibly with `::` and a member. URLs and function names (followed by `(`)
+     * are skipped.
+     */
+    private const string SEE_TAG_PATTERN = '/@see\s+(?!\S*:\/\/)([\w\\\\]++)(?!\()/';
+
+    /**
+     * Finds the type expressions in the tags of a doc comment.
+     *
+     * @return array{string, string}[] Pairs of the matched text, starting at the tag, and the type expression in it
+     */
+    public function docTypeExpressions(string $docComment): array
+    {
+        $expressions = [];
+
+        foreach ([self::TYPE_TAG_PATTERN, self::SEE_TAG_PATTERN] as $pattern) {
+            if (preg_match_all($pattern, $docComment, $matches, PREG_SET_ORDER)) {
+                foreach ($matches as $match) {
+                    $expressions[] = [$match[0], $match[1]];
+                }
+            }
+        }
+
+        return $expressions;
+    }
+
     /** @return string[] */
     public function extractDocTypeNames(string $type): array
     {

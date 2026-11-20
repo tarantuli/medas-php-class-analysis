@@ -13,3 +13,4 @@ uses:
     Alias\Factory => \Vendor\Other\Factory
     Package\Client => \Vendor\Package\Client
     Sub\Local => \App\Sub\Local
+    namespace\Sub\Keyword => \App\Sub\Keyword

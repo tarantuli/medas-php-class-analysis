@@ -16,4 +16,9 @@ class Consumer
     {
         return new Sub\Local();
     }
+
+    public function viaKeyword(): namespace\Sub\Keyword
+    {
+        return new namespace\Sub\Keyword();
+    }
 }

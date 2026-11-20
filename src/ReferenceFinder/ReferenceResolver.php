@@ -23,6 +23,11 @@ readonly class ReferenceResolver
 
     public function resolve(ClassAnalysis $results, string $label): ClassReference
     {
+        if (str_starts_with(strtolower($label), 'namespace\\')) {
+            // "namespace\Foo" is relative to the current namespace, never to an import
+            return new ClassReference($label, $this->inNamespace($results, substr($label, strlen('namespace\\'))));
+        }
+
         $firstPart = $this->fqnProperties->getFirstPart($label);
 
         if ($firstPart === '') {
@@ -34,11 +39,7 @@ readonly class ReferenceResolver
 
         if ($resolvedFirstPart === null) {
             // It's a path relative to the namespace
-            $fqn = $results->namespace
-                ? '\\' . $results->namespace . '\\' . $label
-                : '\\' . $label;
-
-            return new ClassReference($label, $fqn);
+            return new ClassReference($label, $this->inNamespace($results, $label));
         }
         else {
             // It's a path relative to an alias
@@ -47,6 +48,13 @@ readonly class ReferenceResolver
                 $resolvedFirstPart . substr($label, strlen($firstPart))
             );
         }
+    }
+
+    private function inNamespace(ClassAnalysis $results, string $relativeName): string
+    {
+        return $results->namespace
+            ? '\\' . $results->namespace . '\\' . $relativeName
+            : '\\' . $relativeName;
     }
 
     public function resolveImport(ClassAnalysis $results, string $label): string|null

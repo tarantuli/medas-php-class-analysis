@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Medas\PhpClassAnalysis;
 
 use Medas\Core\Attributes\Service;
-use Medas\PhpTokenizer\{Statement, StatementTypeFinder, StatementTypes\UseClassStatement, Token, TokenTree};
+use Medas\PhpTokenizer\{Statement, StatementTypeFinder, StatementTypes\UseClassStatement, Token, TokenTree, TokenType};
 
 /**
  * Finds the class imports (`use` statements) of a file, including several imports in one statement
@@ -49,18 +49,18 @@ readonly class ImportsFinder
 
             ++$index;
 
-            $isGroup = ($tokens[$index] ?? null)?->is(T_BACKSLASH)
-                && ($tokens[$index + 1] ?? null)?->is(T_CURLY_BRACKET_OPEN);
+            $isGroup = ($tokens[$index] ?? null)?->is(TokenType::BACKSLASH)
+                && ($tokens[$index + 1] ?? null)?->is(TokenType::CURLY_BRACKET_OPEN);
 
             if ($isGroup) {
-                $index = $this->processGroup($tokens, $index + 2, $path, $results);
+                $index = $this->processGroup($tokens, $index + 1, $path, $results);
             }
             else {
                 $index = $this->processName($tokens, $index, $path, $results);
             }
 
             // Skip the comma between imports
-            if (($tokens[$index] ?? null)?->is(T_COMMA)) {
+            if (($tokens[$index] ?? null)?->is(TokenType::COMMA)) {
                 ++$index;
             }
         }
@@ -68,11 +68,15 @@ readonly class ImportsFinder
 
     /**
      * @param Token[] $tokens
+     * @param int $index The index of the opening curly bracket of the group
      * @return int The index of the first token after the group
      */
     private function processGroup(array $tokens, int $index, string $prefix, ClassAnalysis $results): int
     {
-        while (isset($tokens[$index]) && !$tokens[$index]->is(T_CURLY_BRACKET_CLOSE)) {
+        $closer = $tokens[$index]->matchingBracket;
+        ++$index;
+
+        while (isset($tokens[$index]) && $tokens[$index] !== $closer) {
             if ($tokens[$index]->is(self::NAME_TOKENS)) {
                 $path = $prefix . '\\' . $tokens[$index]->text;
                 $index = $this->processName($tokens, $index + 1, $path, $results);

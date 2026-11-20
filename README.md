@@ -8,8 +8,8 @@ Statically analyses PHP class files using `medas-php-tokenizer`. Given a class n
 
 **What is extracted:**
 
-- Namespace and fully qualified class name``
-- Class type: `class`, `interface`, `trait`, `enum`````
+- Namespace and fully qualified class name
+- Class type: `class`, `interface`, `trait`, `enum`
 - Modifiers: `abstract`, `final`
 - Import statements (`use …`) with aliases
 - Inheritance: `extends` and `implements`
@@ -28,6 +28,10 @@ Results are returned as a `ClassAnalysis` value object. Every type reference is 
 | `ImportsFinder`   | Extracts `use …` statements                      |
 | `NameFinder`      | Extracts namespace, name, type, modifiers        |
 | `ReferenceFinder` | Extracts all class references across the file    |
+
+The finders read what `medas-php-tokenizer` 4 works out: `NameFinder` reads `Statement::$declaration`, and
+`ReferenceFinder` takes the names the tokenizer marked with `Token::$isClassReference`. Only class names in doc
+comments are found here, by `ReferenceFinder\DoccommentParser`.
 | `FqnProperties`   | Utility for splitting and inspecting FQN strings |
 | `PhpKeywords`     | PHP reserved words and built-in type constants   |
 

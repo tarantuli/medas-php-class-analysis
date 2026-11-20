@@ -6,22 +6,21 @@ namespace Medas\PhpClassAnalysis\ReferenceFinder;
 
 use Medas\Core\Attributes\Service;
 use Medas\PhpClassAnalysis\ClassAnalysis;
-use Medas\PhpTokenizer\{StatementTypeFinder, StatementTypes\ClassDeclaration, Token};
+use Medas\PhpTokenizer\Token;
 
 #[Service]
 readonly class DoccommentParser
 {
     public function __construct(
-        private ReferenceResolver   $referenceResolver,
-        private StatementTypeFinder $statementTypeFinder,
-        private TextAnalyzer        $textAnalyzer,
+        private ReferenceResolver $referenceResolver,
+        private TextAnalyzer      $textAnalyzer,
     )
     {
     }
 
     public function processDoccomment(ClassAnalysis $results, Token $token): void
     {
-        if ($this->statementTypeFinder->for($token->statement) instanceof ClassDeclaration) {
+        if ($token->statement->declaration?->kind->isClassLike()) {
             // The class doccomment
             if (preg_match('/@extends\s+([\w\\\]+)<([\w\\\]+)>/', $token->text, $matches)) {
                 // Process the extension type

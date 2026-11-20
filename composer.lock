@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5f123c3f05bb051df3e62f5e7c91e367",
+    "content-hash": "231399e4e2a781200df19bb48027394a",
     "packages": [
         {
             "name": "morphp/medas-console",
@@ -106,16 +106,16 @@
         },
         {
             "name": "morphp/medas-php-tokenizer",
-            "version": "v3.2.1",
+            "version": "v4.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tarantuli/medas-php-tokenizer.git",
-                "reference": "77423256e20dc4d4490c51312615ba7247e5a617"
+                "reference": "1050ac5b535abf9e5d2df26d8785f9c9486946c3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-php-tokenizer/zipball/77423256e20dc4d4490c51312615ba7247e5a617",
-                "reference": "77423256e20dc4d4490c51312615ba7247e5a617",
+                "url": "https://api.github.com/repos/tarantuli/medas-php-tokenizer/zipball/1050ac5b535abf9e5d2df26d8785f9c9486946c3",
+                "reference": "1050ac5b535abf9e5d2df26d8785f9c9486946c3",
                 "shasum": ""
             },
             "require": {
@@ -151,10 +151,10 @@
                 "backend"
             ],
             "support": {
-                "source": "https://github.com/tarantuli/medas-php-tokenizer/tree/v3.2.1",
+                "source": "https://github.com/tarantuli/medas-php-tokenizer/tree/v4.1.0",
                 "issues": "https://github.com/tarantuli/medas-php-tokenizer/issues"
             },
-            "time": "2026-11-20T10:14:53+00:00"
+            "time": "2026-11-20T12:41:47+00:00"
         },
         {
             "name": "psr/event-dispatcher",

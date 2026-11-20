@@ -6,18 +6,10 @@ namespace Medas\PhpClassAnalysis\ReferenceFinder;
 
 use Medas\Core\Attributes\Service;
 use Medas\PhpClassAnalysis\PhpKeywords;
-use Medas\PhpTokenizer\Token;
 
 #[Service]
 readonly class TextAnalyzer
 {
-    private const array REFERENCE_TYPES = [
-        T_STRING,
-        T_NAME_QUALIFIED,
-        T_NAME_RELATIVE,
-        T_NAME_FULLY_QUALIFIED,
-    ];
-
     /**
      * Doc comment tags that are followed by a type expression. `@method` may have `static` before its return type.
      * Runs of non-whitespace are taken as-is, but whitespace inside array shapes {..} and generics <..>
@@ -98,11 +90,6 @@ readonly class TextAnalyzer
         }
 
         return $names;
-    }
-
-    public function tokenCouldBeClassName(Token $token): bool
-    {
-        return $token->is(self::REFERENCE_TYPES) && $this->couldBeClassName($token->text);
     }
 
     public function couldBeClassName(string $text): bool

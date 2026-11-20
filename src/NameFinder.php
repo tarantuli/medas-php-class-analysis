@@ -5,30 +5,27 @@ declare(strict_types=1);
 namespace Medas\PhpClassAnalysis;
 
 use Medas\Core\Attributes\Service;
-use Medas\PhpTokenizer\{Token, TokenGroups, TokenTree};
+use Medas\PhpTokenizer\{Declaration, DeclarationKind, TokenTree};
 
 /**
- * Finds the namespace of the file, the class name, the class type (class, interface, trait)
+ * Finds the namespace of the file, the class name, the class type (class, interface, trait, enum)
  * and modifiers (abstract, final).
  */
 #[Service]
 readonly class NameFinder
 {
-    public function __construct(
-        private TokenGroups $tokenGroups,
-    )
-    {
-    }
-
     public function find(TokenTree $tree, ClassAnalysis $results): void
     {
-        foreach ($tree as $token) {
-            if ($token->is(T_NAMESPACE)) {
-                $results->namespace = $token->next->text;
+        foreach ($tree->statements() as $statement) {
+            $first = $statement->firstNonCommentToken();
+
+            // "namespace Name;" or "namespace Name {", but not the global "namespace {"
+            if ($first?->is(T_NAMESPACE) && $first->next?->is([T_STRING, T_NAME_QUALIFIED])) {
+                $results->namespace = $first->next->text;
             }
 
-            if ($token->is($this->tokenGroups->structureTypes())) {
-                $this->processName($token, $results);
+            if ($statement->declaration?->kind->isClassLike()) {
+                $this->processDeclaration($statement->declaration, $results);
 
                 // We found both the namespace and the name, we're done!
                 return;
@@ -36,27 +33,22 @@ readonly class NameFinder
         }
     }
 
-    private function processName(Token $token, ClassAnalysis $results): void
+    private function processDeclaration(Declaration $declaration, ClassAnalysis $results): void
     {
-        $results->name = $token->next->text;
+        $results->name = $declaration->name;
 
         $results->fqn = $results->namespace
             ? '\\' . $results->namespace . '\\' . $results->name
             : '\\' . $results->name;
 
-        match ($token->id) {
-            T_CLASS => $results->isClass = true,
-            T_INTERFACE => $results->isInterface = true,
-            T_TRAIT => $results->isTrait = true,
-            T_ENUM => $results->isEnum = true,
+        match ($declaration->kind) {
+            DeclarationKind::Class_ => $results->isClass = true,
+            DeclarationKind::Interface => $results->isInterface = true,
+            DeclarationKind::Trait => $results->isTrait = true,
+            DeclarationKind::Enum => $results->isEnum = true,
         };
 
-        if ($token->statement->containsType(T_FINAL)) {
-            $results->isFinal = true;
-        }
-
-        if ($token->statement->containsType(T_ABSTRACT)) {
-            $results->isAbstract = true;
-        }
+        $results->isFinal = $declaration->hasModifier('final');
+        $results->isAbstract = $declaration->hasModifier('abstract');
     }
 }

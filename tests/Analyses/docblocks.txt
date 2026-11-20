@@ -1,0 +1,28 @@
+namespace: App\Repositories
+name: UserRepository
+fqn: \App\Repositories\UserRepository
+kind: class
+modifiers: 
+extension type: User => \App\Models\User
+extends:
+    Repository => \App\Repositories\Repository
+implements:
+imports:
+    User => \App\Models\User
+uses:
+    Builder => \App\Repositories\Builder
+    Collection => \App\Repositories\Collection
+    Criteria => \App\Repositories\Criteria
+    Filter => \App\Repositories\Filter
+    HasItems => \App\Repositories\HasItems
+    Helper => \App\Repositories\Helper
+    Item => \App\Repositories\Item
+    Macros => \App\Repositories\Macros
+    NotFound => \App\Repositories\NotFound
+    Page => \App\Repositories\Page
+    Paginator => \App\Repositories\Paginator
+    Profile => \App\Repositories\Profile
+    Repository => \App\Repositories\Repository
+    Settings => \App\Repositories\Settings
+    Sorting => \App\Repositories\Sorting
+    User => \App\Models\User

@@ -1,0 +1,22 @@
+namespace: App\Services
+name: Mailer
+fqn: \App\Services\Mailer
+kind: class
+modifiers: 
+extension type: 
+extends:
+implements:
+imports:
+    User => \App\Models\User
+    Team => \App\Models\Team
+    LoggerInterface => \Psr\Log\LoggerInterface
+uses:
+    Attachment => \App\Services\Attachment
+    LoggerInterface => \Psr\Log\LoggerInterface
+    Message => \App\Services\Message
+    Mode => \App\Services\Mode
+    Receipt => \App\Services\Receipt
+    Signed => \App\Services\Signed
+    Team => \App\Models\Team
+    Transport => \App\Services\Transport
+    User => \App\Models\User

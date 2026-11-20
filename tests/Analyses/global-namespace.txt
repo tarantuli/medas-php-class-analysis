@@ -1,0 +1,14 @@
+namespace: 
+name: Script
+fqn: \Script
+kind: class
+modifiers: final
+extension type: 
+extends:
+implements:
+imports:
+    Client => \Vendor\Package\Client
+uses:
+    Client => \Vendor\Package\Client
+    Local => \Local
+    \Absolute\Thing => \Absolute\Thing

@@ -1,0 +1,15 @@
+namespace: App
+name: Consumer
+fqn: \App\Consumer
+kind: class
+modifiers: 
+extension type: 
+extends:
+implements:
+imports:
+    Package => \Vendor\Package
+    Alias => \Vendor\Other
+uses:
+    Alias\Factory => \Vendor\Other\Factory
+    Package\Client => \Vendor\Package\Client
+    Sub\Local => \App\Sub\Local

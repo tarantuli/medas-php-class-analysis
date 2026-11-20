@@ -1,0 +1,24 @@
+namespace: App\Jobs
+name: ProcessOrder
+fqn: \App\Jobs\ProcessOrder
+kind: class
+modifiers: 
+extension type: 
+extends:
+implements:
+imports:
+    Order => \App\Models\Order
+uses:
+    Carrier => \App\Jobs\Carrier
+    Fatal => \App\Jobs\Fatal
+    Line => \App\Jobs\Line
+    Order => \App\Models\Order
+    Refundable => \App\Jobs\Refundable
+    Refunder => \App\Jobs\Refunder
+    Result => \App\Jobs\Result
+    Shipment => \App\Jobs\Shipment
+    ShippingFailed => \App\Jobs\ShippingFailed
+    Status => \App\Jobs\Status
+    Sub\Timeout => \App\Jobs\Sub\Timeout
+    Total => \App\Jobs\Total
+    \App\Billing\Invoice => \App\Billing\Invoice

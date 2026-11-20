@@ -1,0 +1,16 @@
+namespace: App\Contracts
+name: Repository
+fqn: \App\Contracts\Repository
+kind: interface
+modifiers: 
+extension type: 
+extends:
+    Countable => \App\Contracts\Countable
+    Sub\Searchable => \App\Contracts\Sub\Searchable
+    \IteratorAggregate => \IteratorAggregate
+implements:
+imports:
+uses:
+    Countable => \App\Contracts\Countable
+    Sub\Searchable => \App\Contracts\Sub\Searchable
+    \IteratorAggregate => \IteratorAggregate

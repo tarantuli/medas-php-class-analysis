@@ -1,0 +1,13 @@
+namespace: App\Concerns
+name: HasUuid
+fqn: \App\Concerns\HasUuid
+kind: trait
+modifiers: 
+extension type: 
+extends:
+implements:
+imports:
+uses:
+    GeneratesIds => \App\Concerns\GeneratesIds
+    Sub\Tracks => \App\Concerns\Sub\Tracks
+    Uuid => \App\Concerns\Uuid

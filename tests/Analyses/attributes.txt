@@ -1,0 +1,19 @@
+namespace: App\Entities
+name: User
+fqn: \App\Entities\User
+kind: class
+modifiers: 
+extension type: 
+extends:
+implements:
+imports:
+    ORM => \Doctrine\ORM\Mapping
+uses:
+    Assert\Length => \App\Entities\Assert\Length
+    Assert\NotBlank => \App\Entities\Assert\NotBlank
+    ORM\Column => \Doctrine\ORM\Mapping\Column
+    ORM\Entity => \Doctrine\ORM\Mapping\Entity
+    ORM\Table => \Doctrine\ORM\Mapping\Table
+    SensitiveParameter => \App\Entities\SensitiveParameter
+    Types => \App\Entities\Types
+    UserRepository => \App\Entities\UserRepository

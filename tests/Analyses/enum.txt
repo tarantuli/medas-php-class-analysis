@@ -1,0 +1,14 @@
+namespace: App\Enums
+name: Status
+fqn: \App\Enums\Status
+kind: enum
+modifiers: 
+extension type: 
+extends:
+implements:
+    HasLabel => \App\Contracts\HasLabel
+imports:
+    HasLabel => \App\Contracts\HasLabel
+uses:
+    HasLabel => \App\Contracts\HasLabel
+    Translator => \App\Enums\Translator

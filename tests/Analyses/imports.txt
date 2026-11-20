@@ -1,0 +1,18 @@
+namespace: App\Http
+name: Controller
+fqn: \App\Http\Controller
+kind: class
+modifiers: 
+extension type: 
+extends:
+implements:
+imports:
+    User => \App\Models\User
+    Article => \App\Models\Post
+    Leading => \App\Support\Leading
+    One => \App\One
+    Second => \App\Two
+    Alpha => \App\Grouped\Alpha
+    B => \App\Grouped\Beta
+    Gamma => \App\Grouped\Sub\Gamma
+uses:

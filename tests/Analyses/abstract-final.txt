@@ -1,0 +1,14 @@
+namespace: App\Models
+name: Model
+fqn: \App\Models\Model
+kind: class
+modifiers: abstract
+extension type: 
+extends:
+implements:
+    Arrayable => \App\Models\Arrayable
+    \JsonSerializable => \JsonSerializable
+imports:
+uses:
+    Arrayable => \App\Models\Arrayable
+    \JsonSerializable => \JsonSerializable

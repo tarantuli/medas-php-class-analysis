@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Medas\PhpClassAnalysis;
 
 use Medas\Core\Attributes\Service;
-use Medas\PhpTokenizer\{AdditionalTokensDefiner, TokenTree, TreeBuilder};
+use Medas\PhpTokenizer\{TokenTree, TreeBuilder};
 
 #[Service]
 readonly class ClassAnalyser
@@ -15,10 +15,8 @@ readonly class ClassAnalyser
         private NameFinder      $nameFinder,
         private ReferenceFinder $referenceFinder,
         private TreeBuilder     $treeBuilder,
-        AdditionalTokensDefiner $additionalTokensDefiner,
     )
     {
-        $additionalTokensDefiner->define();
     }
 
     public function analyseClassByName(string $class): ClassAnalysis
